@@ -1,0 +1,57 @@
+@import "tailwindcss";
+
+@theme {
+  --font-clash: "Clash Display", sans-serif;
+  --font-outfit: "Outfit", sans-serif;
+}
+
+:root {
+  /* Design Master Palette: Cyber-Professional */
+  --background: #0B0C15; /* Deep Space Black-Blue */
+  --foreground: #E0E1E6; /* Soft White */
+  
+  --primary: #FF2E63;    /* Electric Pink/Red */
+  --secondary: #08D9D6;  /* Neon Cyan */
+  --accent: #252A34;     /* Card Background / Dark Lavender */
+  
+  --success: #00ADB5;
+  --warning: #F08A5D;
+  --error: #FF2E63;
+
+  --card-bg: rgba(37, 42, 52, 0.4);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  
+  --font-clash: "Clash Display", sans-serif;
+  --font-outfit: "Outfit", sans-serif;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-outfit);
+  overflow-x: hidden;
+  background-image: 
+    radial-gradient(circle at 15% 50%, rgba(8, 217, 214, 0.08) 0%, transparent 25%),
+    radial-gradient(circle at 85% 30%, rgba(255, 46, 99, 0.08) 0%, transparent 25%);
+}
+
+/* Utilities for Glassmorphism */
+.glass-panel {
+  background: var(--card-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.text-gradient-primary {
+  background: linear-gradient(135deg, #FF2E63 0%, #FF9F1C 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-secondary {
+  background: linear-gradient(135deg, #08D9D6 0%, #252A34 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}

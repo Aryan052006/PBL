@@ -1,0 +1,178 @@
+{
+    "full stack development": {
+        "keywords": [
+            "react",
+            "node",
+            "express",
+            "mongodb",
+            "javascript",
+            "typescript",
+            "api",
+            "rest",
+            "git",
+            "html",
+            "css",
+            "redux",
+            "next.js",
+            "database",
+            "graphql",
+            "tailwind",
+            "aws"
+        ],
+        "mustHave": [
+            "javascript",
+            "react",
+            "node"
+        ],
+        "sections": [
+            "projects",
+            "experience",
+            "education",
+            "skills"
+        ],
+        "salary": {
+            "min": 60000,
+            "max": 140000,
+            "currency": "USD"
+        },
+        "roles": [
+            "Frontend Developer",
+            "Backend Engineer",
+            "Full Stack Developer",
+            "Software Engineer"
+        ],
+        "hotSkills": [
+            "TypeScript",
+            "Next.js",
+            "AWS"
+        ]
+    },
+    "data science": {
+        "keywords": [
+            "python",
+            "sql",
+            "pandas",
+            "numpy",
+            "matplotlib",
+            "scikit-learn",
+            "tensorflow",
+            "pytorch",
+            "machine learning",
+            "data visualization",
+            "statistics",
+            "jupyter",
+            "spark",
+            "big data"
+        ],
+        "mustHave": [
+            "python",
+            "sql"
+        ],
+        "sections": [
+            "projects",
+            "education",
+            "experience",
+            "publications"
+        ],
+        "salary": {
+            "min": 80000,
+            "max": 160000,
+            "currency": "USD"
+        },
+        "roles": [
+            "Data Scientist",
+            "ML Engineer",
+            "Data Analyst",
+            "AI Researcher"
+        ],
+        "hotSkills": [
+            "TensorFlow",
+            "Generative AI",
+            "SQL"
+        ]
+    },
+    "cloud engineering": {
+        "keywords": [
+            "aws",
+            "azure",
+            "docker",
+            "kubernetes",
+            "linux",
+            "ci/cd",
+            "terraform",
+            "jenkins",
+            "bash",
+            "python",
+            "networking",
+            "security",
+            "gcp",
+            "ansible",
+            "microservices"
+        ],
+        "mustHave": [
+            "aws",
+            "docker",
+            "linux"
+        ],
+        "sections": [
+            "certifications",
+            "projects",
+            "skills"
+        ],
+        "salary": {
+            "min": 90000,
+            "max": 170000,
+            "currency": "USD"
+        },
+        "roles": [
+            "DevOps Engineer",
+            "Cloud Architect",
+            "Site Reliability Engineer (SRE)"
+        ],
+        "hotSkills": [
+            "Kubernetes",
+            "Terraform",
+            "Security"
+        ]
+    },
+    "computer science": {
+        "keywords": [
+            "c++",
+            "java",
+            "python",
+            "algorithms",
+            "data structures",
+            "oop",
+            "dbms",
+            "os",
+            "networking",
+            "system design",
+            "git",
+            "problem solving"
+        ],
+        "mustHave": [
+            "java",
+            "c++"
+        ],
+        "sections": [
+            "education",
+            "projects",
+            "achievements"
+        ],
+        "salary": {
+            "min": 70000,
+            "max": 130000,
+            "currency": "USD"
+        },
+        "roles": [
+            "Software Developer",
+            "Junior Engineer",
+            "Systems Analyst"
+        ],
+        "hotSkills": [
+            "System Design",
+            "Java",
+            "DSA"
+        ]
+    }
+}
