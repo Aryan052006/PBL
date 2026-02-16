@@ -4,7 +4,8 @@ import { useAuth } from "../context/AuthContext";
 import { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Lock, Mail, User, BookOpen, Calendar, ArrowRight, Loader2 } from "lucide-react";
+import { Lock, Mail, User, BookOpen, Calendar, ArrowRight, Loader2, ChevronDown } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function SignUpPage() {
     const { login } = useAuth();
@@ -17,6 +18,7 @@ export default function SignUpPage() {
     });
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
+    const router = useRouter(); // Import useRouter
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -28,7 +30,7 @@ export default function SignUpPage() {
         setError("");
 
         try {
-            const res = await fetch("http://localhost:5000/api/auth/register", {
+            const res = await fetch("http://127.0.0.1:5000/api/auth/register", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(formData),
@@ -39,6 +41,7 @@ export default function SignUpPage() {
             if (!res.ok) throw new Error(data.msg || "Registration failed");
 
             login(data.token, data.user);
+            router.push('/onboarding');
         } catch (err: any) {
             setError(err.message);
         } finally {
@@ -103,12 +106,12 @@ export default function SignUpPage() {
                         <div className="space-y-1">
                             <label className="text-sm text-gray-400">Branch</label>
                             <div className="relative">
-                                <BookOpen className="absolute left-3 top-3.5 w-5 h-5 text-gray-500" />
+                                <BookOpen className="absolute left-3 top-3.5 w-5 h-5 text-gray-500 z-10" />
                                 <select
                                     name="branch"
                                     value={formData.branch}
                                     onChange={handleChange}
-                                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white focus:outline-none focus:border-primary/50 transition-colors appearance-none"
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-10 pr-10 text-white focus:outline-none focus:border-primary/50 transition-colors appearance-none relative z-20 cursor-pointer"
                                 >
                                     <option className="bg-black" value="Computer Science">Computer Science</option>
                                     <option className="bg-black" value="Information Technology">Information Technology</option>
@@ -116,24 +119,26 @@ export default function SignUpPage() {
                                     <option className="bg-black" value="Mechanical">Mechanical</option>
                                     <option className="bg-black" value="Civil">Civil</option>
                                 </select>
+                                <ChevronDown className="absolute right-3 top-3.5 w-5 h-5 text-gray-500 z-10" />
                             </div>
                         </div>
 
                         <div className="space-y-1">
                             <label className="text-sm text-gray-400">Year</label>
                             <div className="relative">
-                                <Calendar className="absolute left-3 top-3.5 w-5 h-5 text-gray-500" />
+                                <Calendar className="absolute left-3 top-3.5 w-5 h-5 text-gray-500 z-10" />
                                 <select
                                     name="year"
                                     value={formData.year}
                                     onChange={handleChange}
-                                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white focus:outline-none focus:border-primary/50 transition-colors appearance-none"
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-10 pr-10 text-white focus:outline-none focus:border-primary/50 transition-colors appearance-none relative z-20 cursor-pointer"
                                 >
                                     <option className="bg-black" value="1st Year">1st Year</option>
                                     <option className="bg-black" value="2nd Year">2nd Year</option>
                                     <option className="bg-black" value="3rd Year">3rd Year</option>
                                     <option className="bg-black" value="4th Year">4th Year</option>
                                 </select>
+                                <ChevronDown className="absolute right-3 top-3.5 w-5 h-5 text-gray-500 z-10" />
                             </div>
                         </div>
                     </div>

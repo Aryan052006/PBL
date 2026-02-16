@@ -13,23 +13,14 @@ const getSkillLogo = (skill: string) => {
 };
 
 // Mock fallback logo if not found (handled via error in img tag usually, but for now simple)
-const SkillBadge = ({ skill, known }: { skill: string; known?: boolean }) => (
-    <div className={`flex flex-col items-center gap-2 p-4 rounded-xl border ${known ? "bg-green-500/10 border-green-500/20" : "bg-white/5 border-white/10"} transition-all hover:scale-105`}>
-        <div className="w-12 h-12 relative flex items-center justify-center bg-white/5 rounded-lg p-2">
-            {/* Try to load logo, fallback to text if obscure */}
-            <img
-                src={getSkillLogo(skill)}
-                alt={skill}
-                className="w-full h-full object-contain"
-                onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = 'none';
-                    (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
-                }}
-            />
-            <span className="hidden text-xs font-bold text-gray-400">{skill.slice(0, 2)}</span>
-        </div>
-        <span className="text-sm font-medium text-gray-300">{skill}</span>
-        {known && <CheckCircle2 className="w-4 h-4 text-green-500" />}
+const SkillTag = ({ skill, known }: { skill: string; known?: boolean }) => (
+    <div className={`flex items-center gap-2 px-4 py-2 rounded-full border ${known
+        ? "bg-green-500/10 border-green-500/20 text-green-400"
+        : "bg-white/5 border-white/10 text-gray-400"
+        } transition-all hover:scale-105`}>
+        {/* Simple text based tag, maybe add a mini dot */}
+        <div className={`w-2 h-2 rounded-full ${known ? "bg-green-500" : "bg-gray-500"}`} />
+        <span className="text-sm font-medium">{skill}</span>
     </div>
 );
 
@@ -51,13 +42,14 @@ export default function ProfilePage() {
         );
     }
 
-    // Mock Roadmap Data (In real app, this comes from user.roadmap)
-    const roadmapApps = [
-        { title: "Next Level Web Dev", learn: ["TypeScript", "Next.js", "TailwindCSS"] },
-    ];
+    // Use real user skills or fallback
+    const knownSkills = user.skills && user.skills.length > 0 ? user.skills : [];
 
-    // Default skills if empty
-    const knownSkills = user.skills && user.skills.length > 0 ? user.skills : ["HTML", "CSS", "JavaScript"];
+    // Use real roadmap or fallback
+    const roadmapApps = user.roadmap && user.roadmap.length > 0 ? user.roadmap : [
+        // Fallback or empty state if no roadmap generated yet
+        { domainTitle: "Get Started", skillsToLearn: ["Complete Onboarding"], skillsHave: [], recommended: true }
+    ];
 
     return (
         <main className="min-h-screen px-4 py-8 max-w-7xl mx-auto space-y-8">
@@ -99,9 +91,9 @@ export default function ProfilePage() {
                         <Award className="text-green-500 w-5 h-5" />
                         Skills You Know
                     </h2>
-                    <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
+                    <div className="flex flex-wrap gap-3">
                         {knownSkills.map((skill) => (
-                            <SkillBadge key={skill} skill={skill} known />
+                            <SkillTag key={skill} skill={skill} known />
                         ))}
                     </div>
                 </motion.div>
@@ -119,12 +111,12 @@ export default function ProfilePage() {
                     </h2>
 
                     <div className="space-y-4">
-                        {roadmapApps.map((path, i) => (
+                        {roadmapApps.map((path: any, i: number) => (
                             <div key={i} className="p-4 rounded-xl bg-white/5 border border-white/10">
-                                <h3 className="font-medium text-secondary mb-3">{path.title}</h3>
-                                <div className="grid grid-cols-3 gap-3">
-                                    {path.learn.map((skill) => (
-                                        <SkillBadge key={skill} skill={skill} />
+                                <h3 className="font-medium text-secondary mb-3">{path.domainTitle}</h3>
+                                <div className="flex flex-wrap gap-2">
+                                    {path.skillsToLearn.map((skill: string) => (
+                                        <SkillTag key={skill} skill={skill} />
                                     ))}
                                 </div>
                             </div>

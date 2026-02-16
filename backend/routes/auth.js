@@ -4,6 +4,9 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
 const router = express.Router();
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+
+const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_KEY);
 
 // @route   POST /api/auth/register
 // @desc    Register a new user
@@ -47,8 +50,8 @@ router.post('/register', async (req, res) => {
             }
         );
     } catch (err) {
-        console.error(err.message);
-        res.status(500).json({ msg: 'Server error' });
+        console.error("Register Error:", err.message);
+        res.status(500).json({ msg: 'Server error', error: err.message });
     }
 });
 
@@ -95,12 +98,86 @@ router.post('/login', async (req, res) => {
 // @route   GET /api/auth/user
 // @desc    Get logged in user
 // @access  Private (Needs middleware)
-router.get('/user', async (req, res) => {
-    // Basic implementation assuming middlware extracts user id to req.user
-    // For this quick setup we skip middleware file and assume it's passed or handled
-    // In a real full impl, we'd add 'auth' middleware here.
-    // Stub for now.
-    res.status(501).json({ msg: "Not implemented yet" });
+// @route   PUT /api/auth/onboarding
+// @desc    Update user with onboarding data (DOB, Skills) & Generate Roadmap
+// @access  Public (Should be Private in real app, but using ID from body for now or simple update)
+router.put('/onboarding', async (req, res) => {
+    const { userId, dob, skills } = req.body;
+
+    try {
+        let user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ msg: 'User not found' });
+        }
+
+        user.dob = dob;
+        user.skills = skills;
+
+        // Intelligent Roadmap Generation via OpenAI
+        try {
+            const prompt = `
+                User has the following skills: ${skills.join(', ')}.
+                Branch: ${user.branch}, Year: ${user.year}.
+                
+                Generate a recommended learning roadmap for this user.
+                Provide 1 to 2 distinct paths/domains (e.g., "Fullstack Development", "Data Science", "Cloud Engineering") that logically follow their current skills.
+                For each path, list "skillsToLearn" (next logical steps) and "skillsHave" (from their current list).
+                
+                Respond ONLY with a valid JSON array of objects with this structure:
+                [
+                    {
+                        "domainTitle": "String",
+                        "skillsToLearn": ["String"],
+                        "skillsHave": ["String"],
+                        "recommended": true
+                    }
+                ]
+                Do not include markdown formatting (like \`\`\`json). Just the raw JSON string.
+            `;
+
+            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+            const result = await model.generateContent(prompt);
+            const response = await result.response;
+            const text = response.text();
+
+            // Clean markdown if present
+            const cleanContent = text.replace(/```json/g, '').replace(/```/g, '').trim();
+
+            let roadmap = [];
+            try {
+                roadmap = JSON.parse(cleanContent);
+            } catch (e) {
+                console.error("JSON Parse Error:", e);
+                // Fallback valid JSON if parse fails
+                roadmap = [{
+                    domainTitle: "Web Development (Fallback)",
+                    skillsToLearn: ["React", "Node.js"],
+                    skillsHave: skills,
+                    recommended: true
+                }];
+            }
+
+            user.roadmap = roadmap;
+        } catch (aiError) {
+            console.error("OpenAI Error:", aiError);
+            // Fallback if AI fails completely
+            user.roadmap = [{
+                domainTitle: "Web Development Fundamentals",
+                skillsToLearn: ["React", "Node.js"],
+                skillsHave: skills,
+                recommended: true
+            }];
+        }
+
+        await user.save();
+
+        res.json({ user });
+
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ msg: 'Server error' });
+    }
 });
 
 module.exports = router;

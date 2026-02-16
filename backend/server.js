@@ -20,33 +20,47 @@ app.get('/', (req, res) => {
   res.json({ message: 'Smart Career Domain Selection API is running', timestamp: new Date() });
 });
 
-// Domain Recommendation Endpoint (Stub)
-app.post('/api/recommend', (req, res) => {
-  const { branch, skills, interests } = req.body;
-  // TODO: Implement actual rule-based logic here
-  console.log('Recommendation Request:', { branch, skills, interests });
+// Domain Recommendation Endpoint
+app.post('/api/recommend', async (req, res) => {
+  const { branch, skills, interests, year } = req.body;
 
-  const mockRecommendations = [
-    {
-      id: 1,
-      title: "Full Stack Development",
-      matchScore: 92,
-      description: "Based on your interest in Web Dev and Javascript skills.",
-      tags: ["React", "Node.js"],
-      recommended: true,
-    },
-    {
-      id: 2,
-      title: "Cloud Engineering",
-      matchScore: 75,
-      description: "Good fit for CS students, but requires more infrastructure knowledge.",
-      tags: ["AWS", "Docker"],
-      recommended: false,
-    }
-  ];
+  const { getGeminiRecommendation } = require('./utils/aiRecommendation');
 
-  // Simulate delay
-  setTimeout(() => res.json({ success: true, daa: mockRecommendations }), 1000);
+  console.log('AI Recommendation Request:', { branch, year, skills: skills?.length, interests });
+
+  try {
+    // Parse skills string to array if needed
+    const skillsArray = Array.isArray(skills) ? skills : (skills || "").split(",").map(s => s.trim());
+
+    const recommendations = await getGeminiRecommendation({
+      branch,
+      year,
+      skills: skillsArray,
+      interests
+    });
+
+    res.json({ success: true, data: recommendations });
+
+  } catch (error) {
+    console.error("Recommendation Error:", error);
+    res.status(500).json({ success: false, msg: "Analysis failed" });
+  }
+});
+
+// Domain Exploration Endpoint
+app.post('/api/explore', async (req, res) => {
+  const { domain, branch, year, skills } = req.body;
+  const { getDomainDetails } = require('./utils/aiRecommendation');
+
+  console.log('AI Explore Request:', { domain, branch, year });
+
+  try {
+    const details = await getDomainDetails(domain, { branch, year, skills });
+    res.json({ success: true, data: details });
+  } catch (error) {
+    console.error("Explore Error:", error);
+    res.status(500).json({ success: false, msg: "Exploration failed" });
+  }
 });
 
 // Portfolio Analysis Endpoint (Stub)
@@ -73,12 +87,17 @@ const connectDB = async () => {
     }
     await mongoose.connect(process.env.MONGO_URI);
     console.log('MongoDB Connected');
+
+    // Only start server if DB connects
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+
   } catch (err) {
-    console.error('MongoDB connection error:', err);
+    console.error('MongoDB connection error:', err.message);
+    // Exit process with failure
+    process.exit(1);
   }
 };
-connectDB();
 
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+connectDB();

@@ -14,6 +14,10 @@ const UserSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    dob: {
+        type: Date,
+        // Not required initially, added during onboarding
+    },
     branch: {
         type: String,
         required: true, // e.g., 'Computer Science'

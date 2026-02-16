@@ -9,9 +9,10 @@ interface DomainCardProps {
     description: string;
     tags: string[];
     recommended?: boolean;
+    onExplore?: () => void;
 }
 
-export default function DomainCard({ title, matchScore, description, tags, recommended }: DomainCardProps) {
+export default function DomainCard({ title, matchScore, description, tags, recommended, onExplore }: DomainCardProps) {
     return (
         <motion.div
             whileHover={{ y: -5, scale: 1.02 }}
@@ -52,7 +53,10 @@ export default function DomainCard({ title, matchScore, description, tags, recom
                     ))}
                 </div>
 
-                <button className="w-full py-3 rounded-xl bg-white/5 border border-white/10 text-white font-medium group-hover:bg-white/10 transition-colors flex items-center justify-center gap-2">
+                <button
+                    onClick={onExplore}
+                    className="w-full py-3 rounded-xl bg-white/5 border border-white/10 text-white font-medium group-hover:bg-white/10 transition-colors flex items-center justify-center gap-2"
+                >
                     Explore Path
                     <ArrowUpRight className="w-4 h-4 text-gray-400 group-hover:text-white transition-colors" />
                 </button>
