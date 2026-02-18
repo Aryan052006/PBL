@@ -10,9 +10,9 @@ export default function Footer() {
                 </div>
 
                 <div className="flex gap-6 text-sm text-gray-400">
-                    <a href="#" className="hover:text-secondary transition-colors">Privacy</a>
-                    <a href="#" className="hover:text-secondary transition-colors">Terms</a>
-                    <a href="#" className="hover:text-secondary transition-colors">GitHub</a>
+                    <a href="#" className="hover:text-secondary transition-colors" target="_blank">Privacy</a>
+                    <a href="#" className="hover:text-secondary transition-colors" target="_blank">Terms</a>
+                    <a href="https://github.com/Aryan052006/PBL" target="_blank" className="hover:text-secondary transition-colors">GitHub</a>
                 </div>
 
                 <div className="text-xs text-gray-600">
