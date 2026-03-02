@@ -11,7 +11,10 @@ interface User {
     year?: string;
     skills?: string[];
     interests?: string[];
+    birthdate?: string;
     roadmap?: any[];
+    skillAnalysis?: string;
+    futureDevelopment?: string[];
 }
 
 interface AuthContextType {

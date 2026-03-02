@@ -15,10 +15,10 @@ export default function Footer() {
                     <a href="#" className="hover:text-secondary transition-colors">GitHub</a>
                 </div>
 
-                <div className="text-xs text-gray-600">
-                    © {new Date().getFullYear()} CareerForge. AI-Powered.
+                <div className="text-xs text-gray-600 text-center md:text-right">
+                    © {new Date().getFullYear()} CareerForge. Precision Career Mapping.
                 </div>
             </div>
-        </footer>
+        </footer >
     );
 }

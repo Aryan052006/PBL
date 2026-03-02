@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import PortfolioUploader from "../components/PortfolioUploader";
-import { AlertCircle, FileText, TrendingUp, DollarSign, Briefcase, Zap, CheckCircle2, ChevronRight, AlertTriangle } from "lucide-react";
+import { AlertCircle, FileText, TrendingUp, DollarSign, Briefcase, Zap, CheckCircle2, ChevronRight, AlertTriangle, Target, LayoutDashboard, Rocket } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
 export default function AnalyzePage() {
@@ -37,11 +37,12 @@ export default function AnalyzePage() {
         }
     };
 
+
     return (
         <main className="min-h-screen px-4 py-12 md:px-8 max-w-7xl mx-auto">
             <div className="text-center mb-12 space-y-4">
                 <h1 className="text-4xl md:text-5xl font-clash font-bold">
-                    AI Career <span className="text-gradient-primary">Architect</span>
+                    Smart Career <span className="text-gradient-primary">Architect</span>
                 </h1>
                 <p className="text-gray-400 max-w-2xl mx-auto">
                     Upload your resume to unlock a professional career breakdown. We analyze your fit across multiple engineering domains, estimate your market value, and tell you exactly how to get hired.
@@ -85,48 +86,60 @@ export default function AnalyzePage() {
                         >
                             {/* Top Stats Row */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {/* Score Card */}
-                                <div className="glass-panel p-6 rounded-3xl relative overflow-hidden bg-gradient-to-br from-white/5 to-white/[0.02]">
-                                    <div className="flex justify-between items-start mb-4">
-                                        <div>
-                                            <p className="text-gray-400 text-sm font-medium mb-1">Career Match</p>
-                                            <h3 className="text-2xl font-bold text-white capitalize">{result.bestFitDomain}</h3>
-                                        </div>
-                                        <div className="p-2 bg-green-500/10 rounded-lg text-green-400">
-                                            <TrendingUp className="w-6 h-6" />
+                                {/* Match Analysis Card */}
+                                <div className="glass-panel p-6 rounded-3xl flex flex-col md:flex-row gap-6 items-center bg-gradient-to-br from-white/5 to-transparent border-white/10">
+                                    {/* Animated Match Score Circle */}
+                                    <div className="relative w-32 h-32 flex items-center justify-center shrink-0">
+                                        <svg className="w-full h-full transform -rotate-90">
+                                            <circle cx="64" cy="64" r="48" fill="transparent" stroke="rgba(255,255,255,0.05)" strokeWidth="8" />
+                                            <motion.circle
+                                                cx="64" cy="64" r="48"
+                                                fill="transparent"
+                                                stroke="#FF2E63"
+                                                strokeWidth="8"
+                                                strokeDasharray={2 * Math.PI * 48}
+                                                initial={{ strokeDashoffset: 2 * Math.PI * 48 }}
+                                                animate={{ strokeDashoffset: 2 * Math.PI * 48 * (1 - (result.skillGap?.matchingPercentage || result.score) / 100) }}
+                                                transition={{ duration: 2, ease: "easeOut" }}
+                                                strokeLinecap="round"
+                                            />
+                                        </svg>
+                                        <div className="absolute flex flex-col items-center">
+                                            <motion.span
+                                                initial={{ opacity: 0, scale: 0.5 }}
+                                                animate={{ opacity: 1, scale: 1 }}
+                                                transition={{ delay: 0.5 }}
+                                                className="text-3xl font-bold text-white"
+                                            >
+                                                {result.skillGap?.matchingPercentage || result.score}%
+                                            </motion.span>
+                                            <span className="text-[10px] text-gray-400 uppercase tracking-[0.2em] font-medium">Score</span>
                                         </div>
                                     </div>
-                                    <div className="flex items-end gap-3 mb-2">
-                                        <span className="text-5xl font-clash font-bold text-white">{result.score}%</span>
-                                        <span className="text-sm text-gray-400 mb-2 font-medium bg-white/10 px-2 py-1 rounded-md">{result.status}</span>
-                                    </div>
-                                    <div className="w-full bg-white/10 h-1.5 rounded-full overflow-hidden mt-4">
-                                        <motion.div
-                                            initial={{ width: 0 }}
-                                            animate={{ width: `${result.score}%` }}
-                                            className="h-full bg-primary"
-                                        />
+                                    <div className="flex-1 space-y-2 text-center md:text-left">
+                                        <p className="text-gray-400 text-sm font-medium">Best Fit Domain</p>
+                                        <h3 className="text-2xl font-bold text-white capitalize">{result.bestFitDomain}</h3>
+                                        <div className="inline-block px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold uppercase tracking-wider">
+                                            {result.status}
+                                        </div>
                                     </div>
                                 </div>
 
-                                {/* Salary Card */}
-                                <div className="glass-panel p-6 rounded-3xl relative overflow-hidden bg-gradient-to-br from-white/5 to-white/[0.02]">
-                                    <div className="absolute top-0 right-0 p-24 bg-green-500/5 blur-[60px] rounded-full pointer-events-none" />
-                                    <div className="flex justify-between items-start mb-4">
+                                {/* Salary & Efficiency Card */}
+                                <div className="glass-panel p-6 rounded-3xl flex flex-col justify-center space-y-4 bg-gradient-to-br from-white/5 to-transparent border-white/10 relative overflow-hidden">
+                                    <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-green-500/10 blur-3xl rounded-full" />
+                                    <div className="flex justify-between items-start">
                                         <div>
-                                            <p className="text-gray-400 text-sm font-medium mb-1">Estimated Value</p>
-                                            <h3 className="text-sm font-medium text-gray-300">Annual Salary Potential</h3>
+                                            <p className="text-gray-400 text-sm font-medium mb-1">Market Valuation</p>
+                                            <span className="text-3xl font-clash font-bold text-white">{result.salary.formatted}</span>
                                         </div>
-                                        <div className="p-2 bg-blue-500/10 rounded-lg text-blue-400">
+                                        <div className="p-3 bg-green-500/10 rounded-2xl text-green-400">
                                             <DollarSign className="w-6 h-6" />
                                         </div>
                                     </div>
-                                    <div className="flex items-end gap-3 mb-2">
-                                        <span className="text-4xl font-clash font-bold text-white">{result.salary.formatted}</span>
-                                    </div>
-                                    <div className="flex gap-2 mt-4 overflow-x-auto pb-1">
-                                        {result.jobTitles.slice(0, 2).map((role: string, i: number) => (
-                                            <span key={i} className="px-2 py-1 rounded-md bg-blue-500/10 text-blue-300 text-xs border border-blue-500/20 whitespace-nowrap">
+                                    <div className="flex flex-wrap gap-2">
+                                        {result.jobTitles.slice(0, 3).map((role: string, i: number) => (
+                                            <span key={i} className="px-2 py-1 rounded-lg bg-white/5 text-gray-400 text-[10px] border border-white/5">
                                                 {role}
                                             </span>
                                         ))}
@@ -134,31 +147,86 @@ export default function AnalyzePage() {
                                 </div>
                             </div>
 
-                            {/* Resume Booster / Tips */}
-                            <div className="glass-panel p-8 rounded-3xl">
+                            {/* Market Analysis & Domain Suitability */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div className="md:col-span-2 glass-panel p-6 rounded-3xl space-y-4 italic bg-white/[0.02]">
+                                    <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                                        <Target className="w-4 h-4 text-primary" />
+                                        Industry Assessment
+                                    </h3>
+                                    <p className="text-gray-300 leading-relaxed">
+                                        "{result.marketAnalysis || "Your profile shows strong potential in the current market. Focus on bridging the core skill gaps to maximize your competitive edge."}"
+                                    </p>
+                                </div>
+                                <div className="glass-panel p-6 rounded-3xl space-y-4">
+                                    <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
+                                        <LayoutDashboard className="w-4 h-4 text-secondary" />
+                                        Domain Fit
+                                    </h3>
+                                    <div className="space-y-3">
+                                        {(result.domainSuitability || [
+                                            { domain: result.bestFitDomain, match: result.score },
+                                            { domain: "Other Options", match: Math.max(0, result.score - 20) }
+                                        ]).map((suit: any, i: number) => (
+                                            <div key={i} className="space-y-1">
+                                                <div className="flex justify-between text-xs">
+                                                    <span className="text-gray-400">{suit.domain}</span>
+                                                    <span className="text-white font-medium">{suit.match}%</span>
+                                                </div>
+                                                <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+                                                    <div className="h-full bg-secondary" style={{ width: `${suit.match}%` }} />
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Resume Boosters / Actionable Feedback */}
+                            <div className="glass-panel p-8 rounded-3xl bg-gradient-to-br from-yellow-500/[0.03] to-transparent">
                                 <h3 className="text-lg font-clash font-semibold text-white mb-6 flex items-center gap-2">
                                     <Zap className="w-5 h-5 text-yellow-400" />
                                     Resume Boosters
                                 </h3>
 
-                                <div className="space-y-4">
-                                    {result.tips.map((tip: string, i: number) => (
-                                        <div key={i} className="p-4 rounded-xl bg-gradient-to-r from-white/5 to-transparent border-l-4 border-l-yellow-400/50 flex gap-4">
-                                            <div className="mt-1"><CheckCircle2 className="w-5 h-5 text-gray-400" /></div>
-                                            <p className="text-gray-200 text-sm leading-relaxed">{tip}</p>
+                                <div className="space-y-4 mb-8">
+                                    {(result.boosters || result.tips).map((item: string, i: number) => (
+                                        <div key={i} className="p-4 rounded-xl bg-white/5 border border-white/5 flex gap-4 hover:bg-white/[0.07] transition-all">
+                                            <div className="mt-1"><CheckCircle2 className="w-5 h-5 text-primary" /></div>
+                                            <p className="text-gray-200 text-sm leading-relaxed">{item}</p>
                                         </div>
                                     ))}
-                                    {result.gaps.length > 0 && (
-                                        <div className="p-4 rounded-xl bg-red-500/5 border border-red-500/10">
-                                            <p className="text-red-400 text-sm font-bold mb-2 uppercase tracking-wide text-xs">Missing Keywords</p>
-                                            <div className="flex flex-wrap gap-2">
-                                                {result.gaps.map((gap: string) => (
-                                                    <span key={gap} className="px-2 py-1 rounded-md bg-red-500/10 text-red-300 text-xs">{gap}</span>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
                                 </div>
+
+                                {result.tips && result.boosters && (
+                                    <>
+                                        <h4 className="text-sm font-semibold text-gray-400 mb-4 uppercase tracking-wider">Career Advice</h4>
+                                        <div className="space-y-3">
+                                            {result.tips.map((tip: string, i: number) => (
+                                                <div key={i} className="flex gap-3 text-sm text-gray-400">
+                                                    <ChevronRight className="w-4 h-4 text-primary shrink-0 mt-0.5" />
+                                                    <p>{tip}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </>
+                                )}
+
+                                {result.gaps && result.gaps.length > 0 && (
+                                    <div className="mt-8 pt-8 border-t border-white/10">
+                                        <p className="text-red-400 text-sm font-bold mb-4 uppercase tracking-wide text-xs flex items-center gap-2">
+                                            <AlertTriangle className="w-4 h-4" />
+                                            Missing Keywords
+                                        </p>
+                                        <div className="flex flex-wrap gap-2">
+                                            {result.gaps.map((gap: string) => (
+                                                <span key={gap} className="px-3 py-1.5 rounded-lg bg-red-500/10 text-red-300 text-xs font-medium border border-red-500/10">
+                                                    {gap}
+                                                </span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </motion.div>
                     )}

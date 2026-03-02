@@ -14,17 +14,26 @@ const UserSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    dob: {
+    birthdate: {
         type: Date,
-        // Not required initially, added during onboarding
     },
     branch: {
         type: String,
-        required: true, // e.g., 'Computer Science'
+        // Optional during initial signup steps
     },
     year: {
         type: String,
-        required: true, // e.g., '3rd Year'
+        // Optional during initial signup steps
+    },
+    isVerified: {
+        type: Boolean,
+        default: false,
+    },
+    verificationOtp: {
+        type: String,
+    },
+    otpExpires: {
+        type: Date,
     },
     skills: {
         type: [String], // Array of skills user manually entered or selected
@@ -41,6 +50,14 @@ const UserSchema = new mongoose.Schema({
         skillsHave: [String], // Skills they ALREADY have
         recommended: Boolean,
     }],
+    skillAnalysis: {
+        type: String,
+        default: "",
+    },
+    futureDevelopment: {
+        type: [String],
+        default: [],
+    },
     createdAt: {
         type: Date,
         default: Date.now,

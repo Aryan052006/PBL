@@ -11,6 +11,20 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
+// Database Connection Middleware (Resilience Helper)
+app.use((req, res, next) => {
+  // Only check DB for /api routes, and skip /api/analyze if it doesn't need DB
+  if (req.path.startsWith('/api') && !req.path.startsWith('/api/analyze')) {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({
+        msg: 'Database is still connecting in the background. Please try again in 5-10 seconds.',
+        status: 'DB_CONNECTING'
+      });
+    }
+  }
+  next();
+});
+
 // Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/analyze', require('./routes/analyze'));
@@ -63,40 +77,27 @@ app.post('/api/explore', async (req, res) => {
   }
 });
 
-// Portfolio Analysis Endpoint (Stub)
-app.post('/api/analyze', (req, res) => {
-  // In a real app, this would handle file upload (multer) and parsing
-  console.log('Analysis Request Received');
-
-  const mockAnalysis = {
-    score: 72,
-    feedback: [
-      { type: "success", message: "Strong project section" },
-      { type: "error", message: "Missing GitHub link" }
-    ]
-  };
-
-  setTimeout(() => res.json({ success: true, data: mockAnalysis }), 1500);
+// Start server immediately for resilience
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+  console.log('--- Resilient Mode: Server started while DB connects in background ---');
 });
 
 // Database Connection
 const connectDB = async () => {
   try {
     if (!process.env.MONGO_URI) {
-      throw new Error('MONGO_URI is undefined. Check your .env file.');
+      console.error('WARNING: MONGO_URI is undefined. Database features will fail.');
+      return;
     }
-    await mongoose.connect(process.env.MONGO_URI);
-    console.log('MongoDB Connected');
 
-    // Only start server if DB connects
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-    });
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log('MongoDB Connected Successfully');
 
   } catch (err) {
-    console.error('MongoDB connection error:', err.message);
-    // Exit process with failure
-    process.exit(1);
+    console.error('CRITICAL: MongoDB connection error:', err.message);
+    console.log('NOTICE: Server is still running, but DB functions are disabled.');
+    // Do not exit process, stay alive for other services (AI, etc.)
   }
 };
 

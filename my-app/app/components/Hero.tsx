@@ -18,7 +18,7 @@ export default function Hero() {
             >
                 <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-panel text-sm font-medium text-secondary mx-auto mb-4">
                     <Sparkles className="w-4 h-4" />
-                    <span>AI-Powered Career Intelligence</span>
+                    <span>Advanced Career Intelligence</span>
                 </div>
 
                 <h1 className="text-6xl md:text-8xl font-bold font-clash leading-[1.1] tracking-tight">

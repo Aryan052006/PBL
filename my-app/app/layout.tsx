@@ -9,7 +9,7 @@ const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
 
 export const metadata: Metadata = {
   title: "CareerForge | Smart Domain & Portfolio Analyzer",
-  description: "AI-powered career guidance for engineering students.",
+  description: "Advanced career guidance for engineering students.",
 };
 
 export default function RootLayout({

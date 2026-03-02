@@ -8,11 +8,24 @@ interface DomainCardProps {
     matchScore: number;
     description: string;
     tags: string[];
+    reasoning: string;
     recommended?: boolean;
+    marketDemand?: string;
+    effortToMaster?: string;
     onExplore?: () => void;
 }
 
-export default function DomainCard({ title, matchScore, description, tags, recommended, onExplore }: DomainCardProps) {
+export default function DomainCard({
+    title,
+    matchScore,
+    description,
+    tags,
+    reasoning,
+    recommended,
+    marketDemand,
+    effortToMaster,
+    onExplore
+}: DomainCardProps) {
     return (
         <motion.div
             whileHover={{ y: -5, scale: 1.02 }}
@@ -43,6 +56,11 @@ export default function DomainCard({ title, matchScore, description, tags, recom
                     <span className="text-sm font-mono text-secondary">{matchScore}% Match</span>
                 </div>
 
+                {/* AI Reasoning */}
+                <div className="mb-4 p-3 rounded-lg bg-white/5 border border-white/5">
+                    <p className="text-sm text-gray-300 italic">"{reasoning}"</p>
+                </div>
+
                 <p className="text-gray-400 text-sm mb-6 line-clamp-2">{description}</p>
 
                 <div className="flex flex-wrap gap-2 mb-6">
@@ -51,6 +69,22 @@ export default function DomainCard({ title, matchScore, description, tags, recom
                             {tag}
                         </span>
                     ))}
+                </div>
+
+                <div className="flex items-center gap-4 mb-6 border-t border-white/5 pt-4">
+                    <div className="space-y-1">
+                        <span className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Demand</span>
+                        <div className={`text-xs font-semibold ${marketDemand === 'High' || marketDemand === 'Critical' ? 'text-primary' : 'text-secondary'}`}>
+                            {marketDemand || "Stable"}
+                        </div>
+                    </div>
+                    <div className="w-px h-8 bg-white/10" />
+                    <div className="space-y-1">
+                        <span className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Effort</span>
+                        <div className="text-xs font-semibold text-gray-300">
+                            {effortToMaster || "Medium"}
+                        </div>
+                    </div>
                 </div>
 
                 <button

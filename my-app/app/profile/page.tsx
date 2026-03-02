@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { User, BookOpen, Calendar, Mail, Award, CheckCircle2, ArrowRight } from "lucide-react";
+import { User, BookOpen, Calendar, Mail, Award, CheckCircle2, ArrowRight, Sparkles, Rocket } from "lucide-react";
 
 // Helper to get skill logo (using devicon CDN for simplicity)
 const getSkillLogo = (skill: string) => {
@@ -51,6 +51,20 @@ export default function ProfilePage() {
         { domainTitle: "Get Started", skillsToLearn: ["Complete Onboarding"], skillsHave: [], recommended: true }
     ];
 
+    // Calculate age
+    const calculateAge = (birthdate: string) => {
+        const birthDate = new Date(birthdate);
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const m = today.getMonth() - birthDate.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+        }
+        return age;
+    };
+
+    const age = user.birthdate ? calculateAge(user.birthdate) : null;
+
     return (
         <main className="min-h-screen px-4 py-8 max-w-7xl mx-auto space-y-8">
             {/* Header / Profile Card */}
@@ -71,6 +85,11 @@ export default function ProfilePage() {
                         <div className="flex items-center gap-1.5"><Mail className="w-4 h-4" /> {user.email}</div>
                         <div className="flex items-center gap-1.5"><BookOpen className="w-4 h-4" /> {user.branch}</div>
                         <div className="flex items-center gap-1.5"><Calendar className="w-4 h-4" /> {user.year}</div>
+                        {age !== null && (
+                            <div className="flex items-center gap-1.5">
+                                <User className="w-4 h-4" /> {age} years old
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -124,6 +143,45 @@ export default function ProfilePage() {
                     </div>
                 </motion.div>
             </div>
+
+            {/* AI Career Insights */}
+            {user.skillAnalysis && (
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                    className="glass-panel p-8 rounded-3xl space-y-6 bg-gradient-to-br from-primary/5 to-secondary/5 border-primary/20"
+                >
+                    <div className="flex flex-col md:flex-row gap-8">
+                        {/* Skill Assessment */}
+                        <div className="flex-1 space-y-4">
+                            <h2 className="text-xl font-clash font-semibold text-white flex items-center gap-2">
+                                <Sparkles className="text-primary w-5 h-5" />
+                                Advanced Skill Assessment
+                            </h2>
+                            <p className="text-gray-400 leading-relaxed italic">
+                                "{user.skillAnalysis}"
+                            </p>
+                        </div>
+
+                        {/* Future Development */}
+                        <div className="flex-1 space-y-4">
+                            <h2 className="text-xl font-clash font-semibold text-white flex items-center gap-2">
+                                <Rocket className="text-secondary w-5 h-5" />
+                                Future Development Suggestions
+                            </h2>
+                            <ul className="space-y-3">
+                                {user.futureDevelopment?.map((item: string, i: number) => (
+                                    <li key={i} className="flex items-start gap-3 text-sm text-gray-400">
+                                        <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-secondary shrink-0" />
+                                        {item}
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    </div>
+                </motion.div>
+            )}
         </main>
     );
 }

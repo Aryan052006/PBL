@@ -3,12 +3,13 @@ const router = express.Router();
 const multer = require('multer');
 const pdf = require('pdf-parse');
 const benchmarks = require('../data/benchmarks.json');
+const { analyzeWithGemini } = require('../utils/gemini');
 
 // Configure Multer
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
-// Helper: Calculate Score for a specific domain
+// Helper: Calculate Score for a specific domain (Fallback Logic)
 const calculateDomainScore = (text, domainKey) => {
     const lowerText = text.toLowerCase();
     const rules = benchmarks[domainKey];
@@ -59,9 +60,6 @@ const calculateDomainScore = (text, domainKey) => {
 
 const estimateSalary = (score, salaryRange) => {
     const { min, max, currency } = salaryRange;
-    // Simple linear interpolation based on score (baseline 50%)
-    // Score < 40 -> Min Salary
-    // Score 100 -> Max Salary
     const factor = Math.max(0, (score - 40) / 60);
     const estimated = Math.round(min + (max - min) * factor);
     return {
@@ -77,32 +75,52 @@ router.post('/upload', upload.single('resume'), async (req, res) => {
     try {
         if (!req.file) return res.status(400).json({ msg: "No file uploaded" });
 
-        // PDF Parsing Logic (Robust import handling)
-        let parseFunc = pdf;
-        if (typeof pdf !== 'function') {
-            if (typeof pdf.default === 'function') parseFunc = pdf.default;
-            else if (typeof pdf.pdf === 'function') parseFunc = pdf.pdf;
+        // --- Step 1: Try AI Analysis (Gemini Multi-Modal) ---
+        console.log("Attempting AI analysis with Gemini (Multi-modal)...");
+        // We pass the buffer and mimetype directly to support images and PDFs
+        const aiResult = await analyzeWithGemini({
+            buffer: req.file.buffer,
+            mimetype: req.file.mimetype
+        });
+
+        if (aiResult) {
+            console.log("AI analysis successful.");
+            return res.json({
+                success: true,
+                isAI: true,
+                data: aiResult
+            });
         }
 
+        // --- Step 2: Fallback to Rule-Based Analysis (Extract text first) ---
+        console.log("AI analysis failed or returned null. Falling back to rule-based analysis.");
+
         let textForAnalysis = "";
-        if (req.file.mimetype.includes('pdf') || req.file.originalname.endsWith('.pdf')) {
-            const data = await parseFunc(req.file.buffer);
-            textForAnalysis = data.text;
-        } else {
+        if (req.file.mimetype === 'application/pdf' || req.file.originalname.endsWith('.pdf')) {
+            let parseFunc = pdf;
+            if (typeof pdf !== 'function') {
+                if (typeof pdf.default === 'function') parseFunc = pdf.default;
+                else if (typeof pdf.pdf === 'function') parseFunc = pdf.pdf;
+            }
+            try {
+                const data = await parseFunc(req.file.buffer);
+                textForAnalysis = data.text;
+            } catch (err) {
+                console.warn("PDF text extraction failed for fallback:", err.message);
+            }
+        } else if (req.file.mimetype.startsWith('text/')) {
             textForAnalysis = req.file.buffer.toString('utf8');
         }
 
         if (!textForAnalysis || textForAnalysis.trim().length === 0) {
-            return res.status(400).json({ msg: "Could not extract text." });
+            return res.status(400).json({ msg: "Analysis failed and could not extract text for fallback." });
         }
 
-        // --- Multi-Domain Analysis ---
         const allDomains = Object.keys(benchmarks);
         let bestDomain = "";
         let highestScore = -1;
         let bestResult = null;
 
-        // 1. Score against all domains
         const scores = {};
         allDomains.forEach(domain => {
             const result = calculateDomainScore(textForAnalysis, domain);
@@ -114,23 +132,19 @@ router.post('/upload', upload.single('resume'), async (req, res) => {
             }
         });
 
-        // 2. Fallback if score is too low
         if (highestScore < 20) {
-            bestDomain = "computer science"; // Default base
+            bestDomain = "computer science";
             bestResult = calculateDomainScore(textForAnalysis, bestDomain);
         }
 
-        // 3. Generate Insights for the Best Fit Domain
         const domainRules = benchmarks[bestDomain];
         const salary = estimateSalary(bestResult.score, domainRules.salary);
 
-        // Status
         let status = "Getting There";
         if (highestScore > 80) status = "Job Ready";
         else if (highestScore > 60) status = "Solid Candidate";
         else if (highestScore > 40) status = "Needs Polishing";
 
-        // Tips Generation
         const tips = [];
         if (bestResult.details.criticalGaps.length > 0) {
             tips.push(`Critical: You are missing core skills: ${bestResult.details.criticalGaps.join(', ')}.`);
@@ -138,19 +152,17 @@ router.post('/upload', upload.single('resume'), async (req, res) => {
         if (bestResult.details.boosters.length > 0) {
             tips.push(`Salary Boost: Learn ${bestResult.details.boosters.join(', ')} to increase your market value.`);
         }
-        if (bestResult.details.sectionScore < 50) {
-            tips.push("Structure: Ensure you have clear 'Projects', 'Experience', and 'Education' sections.");
-        }
 
         res.json({
             success: true,
+            isAI: false,
             data: {
                 bestFitDomain: bestDomain,
                 score: highestScore,
                 status,
                 salary,
                 jobTitles: domainRules.roles,
-                scores: scores, // Return all scores for comparison chart
+                scores: scores,
                 gaps: bestResult.details.missingKeywords.slice(0, 8),
                 boosters: bestResult.details.boosters,
                 tips: tips
@@ -164,3 +176,4 @@ router.post('/upload', upload.single('resume'), async (req, res) => {
 });
 
 module.exports = router;
+
