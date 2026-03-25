@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { X, BookOpen, TrendingUp, DollarSign, Lightbulb, Rocket } from "lucide-react";
+import { X, BookOpen, TrendingUp, DollarSign, Lightbulb, Rocket, GraduationCap, Star } from "lucide-react";
 
 interface DomainDetailModalProps {
     isOpen: boolean;
@@ -143,7 +143,7 @@ export default function DomainDetailModal({ isOpen, onClose, domain, isLoading }
 
                             {/* Detailed Sections Grid */}
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                                {/* Roadmap */}
+                                {/* Roadmap + Learning Resources + Tips */}
                                 <div className="lg:col-span-2 space-y-6">
                                     <div className="flex items-center gap-3 text-primary">
                                         <BookOpen className="w-6 h-6" />
@@ -159,9 +159,48 @@ export default function DomainDetailModal({ isOpen, onClose, domain, isLoading }
                                             </div>
                                         ))}
                                     </div>
+
+                                    {/* Learning Resources — under roadmap */}
+                                    {domain.learningResources && domain.learningResources.length > 0 && (
+                                        <div className="p-6 rounded-3xl bg-secondary/5 border border-secondary/10 space-y-4">
+                                            <h3 className="text-lg font-bold text-white flex items-center gap-2 font-clash">
+                                                <GraduationCap className="w-5 h-5 text-secondary" />
+                                                Free Learning Resources
+                                            </h3>
+                                            <ul className="space-y-3">
+                                                {domain.learningResources.map((resource: string, i: number) => (
+                                                    <li key={i} className="flex items-start gap-3 p-3 rounded-xl bg-white/5 border border-white/5 text-sm text-gray-300">
+                                                        <span className="mt-0.5 flex-shrink-0 w-5 h-5 flex items-center justify-center rounded-full bg-secondary/20 text-secondary text-[10px] font-bold">{i + 1}</span>
+                                                        {resource}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+
+                                    {/* Pro Career Tips — under roadmap */}
+                                    <div className="p-6 rounded-3xl bg-white/5 border border-white/10 space-y-4">
+                                        <h3 className="text-lg font-bold text-white flex items-center gap-2 font-clash">
+                                            <Star className="w-5 h-5 text-yellow-400" />
+                                            Pro Career Tips
+                                        </h3>
+                                        <ul className="space-y-3">
+                                            {[
+                                                "Build in public — push all projects to GitHub and write a short LinkedIn post about each one.",
+                                                "Apply for internships from Semester 4 onwards; even a 1-month project internship makes your resume stand out.",
+                                                "Earn one cloud/vendor certification (AWS, Google, Cisco) — it's worth more than 3 generic certifications.",
+                                                "Contribute to open-source projects to fast-track your practical experience and network with professionals."
+                                            ].map((tip, i) => (
+                                                <li key={i} className="flex items-start gap-3 text-xs text-gray-400 leading-relaxed">
+                                                    <span className="mt-0.5 flex-shrink-0 text-yellow-400">✦</span>
+                                                    {tip}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
                                 </div>
 
-                                {/* Missing Skills & Resources */}
+                                {/* Right column: Missing Skills & Mini-Projects */}
                                 <div className="space-y-8">
                                     {/* Action Items: Missing Skills */}
                                     <div className="p-6 rounded-3xl bg-white/5 border border-white/10 space-y-4">

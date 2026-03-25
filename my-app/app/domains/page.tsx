@@ -18,7 +18,7 @@ const ANALYSIS_STEPS = [
 export default function DomainsPage() {
     const { user } = useAuth();
     const [formData, setFormData] = useState({
-        branch: "cs",
+        branch: "ce",
         year: "1",
         skills: ""
     });
@@ -33,14 +33,15 @@ export default function DomainsPage() {
     const [isExploreLoading, setIsExploreLoading] = useState(false);
     const [showModal, setShowModal] = useState(false);
 
-    // Auto-populate and potentially analyze on mount if user data exists
+    // Auto-populate branch/year from profile (NOT skills — user may be analyzing for someone else)
     useEffect(() => {
-        if (user && user.skills && user.skills.length > 0) {
-            setFormData({
-                branch: user.branch || "cs",
+        if (user) {
+            setFormData(prev => ({
+                ...prev,
+                branch: user.branch || "ce",
                 year: user.year || "1",
-                skills: user.skills.join(", ")
-            });
+                skills: "" // Always start blank so user fills it in manually
+            }));
         }
     }, [user]);
 
@@ -159,13 +160,11 @@ export default function DomainsPage() {
                                         onChange={handleChange}
                                         className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#FF2E63] transition-colors"
                                     >
-                                        <option value="cs">Computer Science</option>
-                                        <option value="it">Information Technology</option>
-                                        <option value="ece">Electronics & Communication</option>
-                                        <option value="entc">E & TC</option>
-                                        <option value="mech">Mechanical</option>
-                                        <option value="civil">Civil</option>
-                                        <option value="ai">AI & DS</option>
+                                        <option value="ce">CE</option>
+                                        <option value="it">IT</option>
+                                        <option value="entc">ENTC</option>
+                                        <option value="ece">E & CE</option>
+                                        <option value="aids">AIDS</option>
                                     </select>
                                 </div>
                                 <div className="space-y-2">
@@ -193,7 +192,7 @@ export default function DomainsPage() {
                                         name="skills"
                                         value={formData.skills}
                                         onChange={handleChange}
-                                        placeholder="e.g. Python, React, Java..."
+                                        placeholder="e.g. Python, React, Arduino, VLSI, TensorFlow..."
                                         className="w-full bg-black/20 border border-white/10 rounded-lg pl-10 pr-4 py-3 text-white focus:outline-none focus:border-[#FF2E63] transition-colors placeholder:text-gray-600"
                                     />
                                 </div>
