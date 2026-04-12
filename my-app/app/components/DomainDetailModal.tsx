@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { X, BookOpen, TrendingUp, DollarSign, Lightbulb, Rocket, GraduationCap, Star } from "lucide-react";
+import { X, BookOpen, TrendingUp, DollarSign, Lightbulb, Rocket, GraduationCap, Star, Download } from "lucide-react";
 
 interface DomainDetailModalProps {
     isOpen: boolean;
@@ -13,6 +13,88 @@ interface DomainDetailModalProps {
 
 export default function DomainDetailModal({ isOpen, onClose, domain, isLoading }: DomainDetailModalProps) {
     if (!isOpen) return null;
+
+    const handleDownloadDomainReport = async () => {
+        if (!domain) return;
+        try {
+            const { jsPDF } = await import("jspdf");
+            
+            const doc = new jsPDF({
+                orientation: "portrait",
+                unit: "mm",
+                format: "a4"
+            });
+
+            const margin = 20;
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const textWidth = pageWidth - (margin * 2);
+            let y = margin;
+
+            const addText = (text: string, fontSize: number, isBold: boolean = false, increment: number = 0) => {
+                doc.setFont("helvetica", isBold ? "bold" : "normal");
+                doc.setFontSize(fontSize);
+                const lines = doc.splitTextToSize(text, textWidth);
+                
+                if (y + (lines.length * (fontSize * 0.4)) > 280) {
+                    doc.addPage();
+                    y = margin;
+                }
+                
+                doc.text(lines, margin, y);
+                y += (lines.length * (fontSize * 0.4)) + increment;
+            };
+
+            // Title
+            addText(`CareerForge - Domain Report: ${domain.title}`, 18, true, 8);
+            addText(`Generated on: ${new Date().toLocaleDateString()}`, 10, false, 8);
+
+            // Summary
+            addText("Overview", 14, true, 6);
+            addText(`Match Score: ${domain.skillGap?.matchingPercentage || 0}%`, 11, false, 4);
+            addText(`Salary Range: ${domain.salaryRange} LPA`, 11, false, 4);
+            addText(`Next Priority: ${domain.nextLearningPriority || 'N/A'}`, 11, false, 8);
+
+            const analysis = domain.matchReasoning || domain.detailedAnalysis || domain.overview;
+            if (analysis) {
+                addText(analysis, 10, false, 8);
+            }
+
+            // Skills
+            addText("Skills Assessment", 14, true, 6);
+            const matched = domain.skillGap?.matchedSkills || [];
+            addText(`Foundations: ${matched.length > 0 ? matched.join(", ") : 'None'}`, 11, false, 4);
+            
+            const missing = domain.skillGap?.missingSkills || [];
+            addText(`To Develop: ${missing.length > 0 ? missing.join(", ") : 'None'}`, 11, false, 8);
+
+            // Roadmap
+            if (domain.roadmap && domain.roadmap.length > 0) {
+                addText("Strategic Roadmap", 14, true, 6);
+                domain.roadmap.forEach((step: string, i: number) => {
+                    addText(`${i + 1}. ${step}`, 10, false, 4);
+                });
+                y += 4;
+            }
+
+            // Projects
+            if (domain.projectIdeas && domain.projectIdeas.length > 0) {
+                addText("Mini-Project Ideas", 14, true, 6);
+                domain.projectIdeas.forEach((idea: string) => {
+                    addText(`• ${idea}`, 10, false, 4);
+                });
+                y += 4;
+            }
+
+            // Pro Tips
+            addText("Pro Career Tips", 14, true, 6);
+            ["Build in public by sharing projects.", "Apply for internships early.", "Earn official vendor certifications.", "Contribute to open-source."].forEach(tip => addText(`• ${tip}`, 10, false, 4));
+
+            doc.save(`${(domain.title || 'Domain').replace(/\s+/g, '_')}_Career_Plan.pdf`);
+        } catch (err) {
+            console.error("PDF generation failed:", err);
+            alert("Failed to generate PDF report.");
+        }
+    };
 
     return (
         <AnimatePresence>
@@ -48,15 +130,22 @@ export default function DomainDetailModal({ isOpen, onClose, domain, isLoading }
                             {/* Header & Skill Gap Chart */}
                             <div className="flex flex-col lg:flex-row gap-10 items-start">
                                 <div className="flex-1 space-y-4">
-                                    <div className="flex items-center gap-4">
+                                    <div className="flex flex-wrap items-center gap-4 pr-10">
                                         <h2 className="text-4xl md:text-5xl font-clash font-bold text-white">
                                             {domain.title || "Career Path"}
                                         </h2>
                                         {domain.currentStatus && (
-                                            <div className="px-4 py-1.5 rounded-full bg-primary/20 border border-primary/30 text-primary text-sm font-bold animate-pulse">
+                                            <div className="px-4 py-1.5 rounded-full bg-primary/20 border border-primary/30 text-primary text-sm font-bold animate-pulse whitespace-nowrap">
                                                 {domain.currentStatus}
                                             </div>
                                         )}
+                                        <button
+                                            onClick={handleDownloadDomainReport}
+                                            className="ml-auto w-full md:w-auto flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-secondary/10 border border-secondary/20 text-secondary hover:bg-secondary/20 transition-all text-sm font-medium"
+                                        >
+                                            <Download className="w-4 h-4" />
+                                            Download Path
+                                        </button>
                                     </div>
                                     <div className="p-5 rounded-2xl bg-gradient-to-br from-primary/10 to-transparent border border-primary/20">
                                         <p className="text-gray-300 text-lg leading-relaxed">
@@ -80,7 +169,10 @@ export default function DomainDetailModal({ isOpen, onClose, domain, isLoading }
                                 </div>
 
                                 <div className="w-full lg:w-auto p-8 rounded-3xl bg-white/5 border border-white/10 flex flex-col items-center space-y-4">
-                                    <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-widest">Readiness Score</h3>
+                                    <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-widest text-center leading-relaxed">
+                                        Skill Readiness Score<br/>
+                                        <span className="text-[10px] font-normal text-gray-500 tracking-normal capitalize">Direct Concept Overlap</span>
+                                    </h3>
                                     <div className="relative w-40 h-40 flex items-center justify-center shrink-0">
                                         <svg className="w-full h-full transform -rotate-90">
                                             <circle cx="80" cy="80" r="56" fill="transparent" stroke="rgba(255,255,255,0.05)" strokeWidth="10" />

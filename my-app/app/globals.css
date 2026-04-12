@@ -85,3 +85,34 @@ body {
 .hover-glow:hover {
   box-shadow: 0 0 20px rgba(8, 217, 214, 0.2);
 }
+
+/* PDF Export Safe Overrides — html2canvas cannot parse oklch/oklab (Tailwind v4 default) */
+/* Apply .pdf-safe to any element that gets captured for PDF export */
+.pdf-safe,
+.pdf-safe * {
+  /* Reset all CSS color functions to plain RGB/Hex equivalents */
+  --tw-backdrop-blur: blur(0px);
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+.pdf-safe .glass-panel {
+  background: rgba(30, 32, 45, 0.95) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.4) !important;
+}
+.pdf-safe [class*="bg-primary"],
+.pdf-safe [class*="bg-\[#FF2E63\]"] {
+  background-color: #FF2E63 !important;
+}
+.pdf-safe [class*="bg-secondary"],
+.pdf-safe [class*="bg-\[#08D9D6\]"] {
+  background-color: #08D9D6 !important;
+}
+.pdf-safe [class*="text-primary"],
+.pdf-safe [class*="text-\[#FF2E63\]"] {
+  color: #FF2E63 !important;
+}
+.pdf-safe [class*="text-secondary"],
+.pdf-safe [class*="text-\[#08D9D6\]"] {
+  color: #08D9D6 !important;
+}

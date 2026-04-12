@@ -1,0 +1,54 @@
+{
+  "labels": [
+    "Full Stack & App Development",
+    "Data Science & AI",
+    "Cloud & DevOps",
+    "Cyber Security",
+    "Blockchain Development",
+    "Embedded Systems & IoT",
+    "VLSI & Chip Design",
+    "Signal Processing & DSP",
+    "Telecommunications & 5G",
+    "Robotics & Automation",
+    "Computer Vision & Image Processing",
+    "Natural Language Processing",
+    "Data Engineering & Analytics"
+  ],
+  "label_to_id": {
+    "Full Stack & App Development": 0,
+    "Data Science & AI": 1,
+    "Cloud & DevOps": 2,
+    "Cyber Security": 3,
+    "Blockchain Development": 4,
+    "Embedded Systems & IoT": 5,
+    "VLSI & Chip Design": 6,
+    "Signal Processing & DSP": 7,
+    "Telecommunications & 5G": 8,
+    "Robotics & Automation": 9,
+    "Computer Vision & Image Processing": 10,
+    "Natural Language Processing": 11,
+    "Data Engineering & Analytics": 12
+  },
+  "id_to_label": {
+    "0": "Full Stack & App Development",
+    "1": "Data Science & AI",
+    "2": "Cloud & DevOps",
+    "3": "Cyber Security",
+    "4": "Blockchain Development",
+    "5": "Embedded Systems & IoT",
+    "6": "VLSI & Chip Design",
+    "7": "Signal Processing & DSP",
+    "8": "Telecommunications & 5G",
+    "9": "Robotics & Automation",
+    "10": "Computer Vision & Image Processing",
+    "11": "Natural Language Processing",
+    "12": "Data Engineering & Analytics"
+  },
+  "branch_weights": {
+    "ce":   [0.9, 0.8, 0.8, 0.8, 0.7, 0.5, 0.3, 0.3, 0.3, 0.5, 0.6, 0.7, 0.6],
+    "it":   [0.9, 0.8, 0.9, 0.9, 0.6, 0.4, 0.2, 0.2, 0.3, 0.3, 0.5, 0.6, 0.8],
+    "entc": [0.4, 0.5, 0.5, 0.5, 0.3, 1.0, 1.0, 1.0, 1.0, 0.9, 0.6, 0.4, 0.4],
+    "ece":  [0.4, 0.5, 0.5, 0.5, 0.3, 1.0, 1.0, 1.0, 1.0, 0.9, 0.6, 0.4, 0.4],
+    "aids": [0.5, 1.0, 0.5, 0.4, 0.3, 0.3, 0.2, 0.4, 0.3, 0.5, 1.0, 1.0, 0.9]
+  }
+}

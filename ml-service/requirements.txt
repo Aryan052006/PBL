@@ -1,0 +1,15 @@
+# Use flexible versioning for Python 3.15 alpha compatibility
+fastapi>=0.111.0
+uvicorn[standard]>=0.30.0
+scikit-learn>=1.4.2
+numpy>=1.26.4
+pandas>=2.2.2
+sentence-transformers>=3.0.1
+pdfminer.six>=20231228
+google-generativeai>=0.7.2
+python-multipart>=0.0.9
+requests>=2.32.3
+joblib>=1.4.2
+python-dotenv>=1.0.1
+# faiss-cpu can be tricky on Python 3.15 alpha — using sklearn fallback internally
+odfpy>=1.4.1

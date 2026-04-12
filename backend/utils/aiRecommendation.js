@@ -72,55 +72,53 @@ const getGeminiRecommendation = async (userProfile) => {
     const ctx = BRANCH_CONTEXT[branchKey] || BRANCH_CONTEXT["ce"];
 
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
         const prompt = `
-            Act as a high-level career strategist for Indian engineering students.
+            Act as an elite career strategist and high-level technical consultant for top-tier Indian engineering talent. Your tone is bold, authoritative, and visionary.
 
             Student Profile:
-            - Branch: ${ctx.name}
-            - Year: ${year}
-            - Known Skills: ${skills.length > 0 ? skills.join(', ') : "None specified yet"}
+            - Identifier: {year} {ctx.name} Candidate
+            - Current Expertise: ${skills.length > 0 ? skills.join(', ') : "Strategic foundation under development"}
 
-            Branch Context:
+            Institutional Context:
             ${ctx.note}
 
-            Branch-Specialized Domains (MUST be prioritized and scored first for this branch):
+            Sector-Specific Verticals (PRIORITY):
             ${ctx.specializedDomains.map((d, i) => `${i + 1}. ${d}`).join('\n            ')}
 
             Task:
-            Provide a comprehensive career strategy in JSON format.
-            Evaluate the student across exactly 10 domains. The 10 domains MUST include ALL of the branch-specialized domains listed above. Fill the remaining slots with the most relevant general tech domains.
+            Construct a comprehensive market-positioning strategy in JSON format.
+            Analyze the candidate across exactly 10 domains. Prioritize the sector-specific verticals mentioned above.
 
-            IMPORTANT SCORING RULES:
-            - For branch-specialized domains: Score based purely on skill match potential for someone in this branch. If skills are empty, still give a moderate-high score (50-75) for the most branch-relevant domains as a baseline.
-            - For non-specialized domains: Only give high scores if the student has explicit matching skills.
-            - The "recommended: true" flag must go to the single best domain for this student's branch + skills combination.
+            STRATEGIC SCORING ARCHITECTURE:
+            - Sector Verticals: Provide a high-confidence evaluation. Even with minimal baseline skills, award a baseline of 60-75 score for the candidate's core branch path to maintain momentum.
+            - Adjacent Verticals: Award high scores ONLY if the candidate demonstrates explicit, high-value technical competencies.
+            - Primary Recommendation: Set the "recommended: true" flag for the single most advantageous career pivot for this candidate.
 
-            The response must be a single JSON object:
+            Response JSON format:
             {
-                "globalAssessment": "A 2-sentence summary of the student's current academic/skill standing in the Indian market considering their branch.",
-                "topInsight": "A single, powerful piece of advice for career growth tailored to their branch.",
+                "globalAssessment": "A powerful 2-3 sentence strategic overview of the candidate's current market value and potential within the Indian hierarchy.",
+                "topInsight": "A single, high-leverage strategic insight that will push this candidate into the top 1% of their field.",
                 "recommendations": [
                     {
                         "title": "Domain Name",
                         "matchScore": number (0-100),
                         "marketDemand": "High/Critical/Moderate",
-                        "reasoning": "Specific reason why this fits (or doesn't) given their branch, year, and current skills.",
-                        "tags": ["Tech1", "Tech2"],
-                        "description": "Short role summary.",
-                        "recommended": boolean (true only for the single #1 match),
+                        "reasoning": "Direct, expert analysis of why this fit is a strategic win or why it requires refinement.",
+                        "tags": ["Focus Area 1", "Focus Area 2"],
+                        "description": "Bold sector overview.",
+                        "recommended": boolean,
                         "effortToMaster": "Low/Medium/High"
                     }
                 ],
                 "skillsOverlap": {
-                    "matched": ["Current skilled technologies relevant to their field"],
-                    "missing": ["Top 3 critical technologies to learn next for their branch"]
+                    "matched": ["High-value competencies currently held"],
+                    "missing": ["The 3 most critical missing pieces to achieve market dominance"]
                 }
             }
 
-            Output Format:
-            Include exactly 10 domains in the "recommendations" array, sorted by matchScore descending. Raw JSON only. No markdown.
+            Tone: Assertive, authoritative, and expert. Output EXACT JSON with no markdown.
         `;
 
         const result = await model.generateContent(prompt);
@@ -152,8 +150,13 @@ const getGeminiRecommendation = async (userProfile) => {
         };
 
     } catch (error) {
-        console.error("Gemini AI Error (Recommendations):", error);
-        return [];
+        console.error("Gemini AI Error (Recommendations):", error.message);
+        return {
+            globalAssessment: "Our elite intelligence core is currently experiencing high demand. Strategy generation is partially limited.",
+            topInsight: "Focus on your core engineering fundamentals while we recalibrate your roadmap.",
+            recommendations: [],
+            skillsOverlap: { matched: [], missing: [] }
+        };
     }
 };
 
@@ -164,31 +167,31 @@ const getDomainDetails = async (domainTitle, userProfile) => {
     const ctx = BRANCH_CONTEXT[branchKey] || BRANCH_CONTEXT["ce"];
 
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
         const prompt = `
-            Create a detailed career guide for the domain: "${domainTitle}".
-            Target Audience: Year ${year} ${ctx.name} student who knows [${skills && skills.length > 0 ? skills.join(', ') : "no specific skills yet"}].
+            Construct an authoritative, high-gravity career guide for the domain: "${domainTitle}".
+            Target Persona: Year ${year} ${ctx.name} Professional-in-training with foundational knowledge in [${skills && skills.length > 0 ? skills.join(', ') : "Strategic technologies yet to be acquired"}].
 
-            Provide the following details in JSON format:
-            1. overview: A motivating overview of the field (2-3 sentences).
-            2. whyGoodFit: Why this is a good choice for a ${ctx.name} student specifically.
-            3. currentStatus: A string indicating their current proficiency for THIS domain specifically (e.g., "Novice", "Early Beginner", "Ready to Build", "Job Ready") based on their skills.
-            4. matchReasoning: A detailed 2-3 sentence analysis of their current skills relative to industry standards for this domain.
-            5. salaryRange: Estimated entry-level salary range in India (LPA).
-            6. roadmap: An array of 5 granular, technical steps (strings) to go from their current level to professional.
-            7. learningResources: An array of 3 recommended free learning resources or platforms.
-            8. projectIdeas: An array of 3 specific project ideas that would boost their profile for this domain.
-            9. skillGap: An object with:
-                - matchingPercentage: (number 0-100)
-                - gapPercentage: (number 0-100)
-                - matchedSkills: Array of their current skills that apply to this domain.
-                - missingSkills: Array of 5-7 technical skills they MUST learn next for this domain.
-            10. alternativeDomains: An array of 2-3 OTHER domains they should explore based on their branch and profile.
-            11. nextLearningPriority: The single most important technology to learn RIGHT NOW for their branch.
+            Generate a strategic domain blueprint in JSON:
+            1. overview: A bold, 3-sentence vision of why this sector is a premier career vertical.
+            2. whyGoodFit: A confident technical rationale for why an student of ${ctx.name} background is uniquely positioned for dominance here.
+            3. currentStatus: Authoritative status (e.g., "Novice", "Early Beginner", "Building Momentum", "Job Ready").
+            4. matchReasoning: A sharp, 3-sentence technical audit of their current competencies vs. global industry standards.
+            5. salaryRange: Real-world high-trajectory entry-level salary range in India (LPA).
+            6. roadmap: 5 granular, high-intensity technical milestones (strings) to achieve professional mastery.
+            7. learningResources: 3 curated, top-tier free resource platforms.
+            8. projectIdeas: 3 high-impact project concepts that demonstrate absolute section dominance.
+            9. skillGap: {
+                "matchingPercentage": (number 0-100),
+                "gapPercentage": (number 0-100),
+                "matchedSkills": current relevant competencies,
+                "missingSkills": 5-7 mission-critical technologies needed to bridge the gap.
+            }
+            10. alternativeDomains: 2-3 adjacent high-growth pivots.
+            11. nextLearningPriority: The single most important competitive advantage they must acquire IMMEDIATELY.
 
-            Output Format:
-            Raw JSON object. No markdown.
+            Tone: Assertive, বিশেষজ্ঞ (expert), and visionary. Raw JSON only.
         `;
 
         const result = await model.generateContent(prompt);

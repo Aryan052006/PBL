@@ -3,15 +3,25 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-interface User {
+export interface User {
     id: string;
     name: string;
     email: string;
     branch?: string;
     year?: string;
+    birthdate?: string;
     skills?: string[];
     interests?: string[];
-    birthdate?: string;
+    // KNN Feature Set (Research Paper)
+    cgpa?: number;
+    projects_count?: number;
+    internship_experience?: number;
+    certifications?: number;
+    coding_platform_rating?: number;
+    communication_score?: number;
+    aptitude_score?: number;
+    hackathon_count?: number;
+    // AI-generated insights
     roadmap?: any[];
     skillAnalysis?: string;
     futureDevelopment?: string[];
@@ -22,6 +32,7 @@ interface AuthContextType {
     token: string | null;
     login: (token: string, userData: User) => void;
     logout: () => void;
+    updateUser: (userData: Partial<User>) => void;
     isAuthenticated: boolean;
     isLoading: boolean;
 }
@@ -29,8 +40,9 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType>({
     user: null,
     token: null,
-    login: () => { },
-    logout: () => { },
+    login: () => {},
+    logout: () => {},
+    updateUser: () => {},
     isAuthenticated: false,
     isLoading: true,
 });
@@ -42,10 +54,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const router = useRouter();
 
     useEffect(() => {
-        // Check localStorage on mount
         const storedToken = localStorage.getItem("token");
         const storedUser = localStorage.getItem("user");
-
         if (storedToken && storedUser) {
             setToken(storedToken);
             setUser(JSON.parse(storedUser));
@@ -58,7 +68,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         localStorage.setItem("user", JSON.stringify(userData));
         setToken(newToken);
         setUser(userData);
-        router.push("/profile"); // Default redirect
+        router.push("/profile");
+    };
+
+    const updateUser = (userData: Partial<User>) => {
+        setUser(prev => {
+            if (!prev) return prev;
+            const updated = { ...prev, ...userData };
+            localStorage.setItem("user", JSON.stringify(updated));
+            return updated;
+        });
     };
 
     const logout = () => {
@@ -70,7 +89,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, token, login, logout, isAuthenticated: !!token, isLoading }}>
+        <AuthContext.Provider value={{ user, token, login, logout, updateUser, isAuthenticated: !!token, isLoading }}>
             {children}
         </AuthContext.Provider>
     );

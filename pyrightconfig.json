@@ -1,0 +1,22 @@
+{
+    "venvPath": "d:/pbl/PBL/ml-service",
+    "venv": ".venv",
+    "extraPaths": [
+        "d:/pbl/PBL/ml-service"
+    ],
+    "pythonVersion": "3.10",
+    "typeCheckingMode": "off",
+    "reportPrivateImportUsage": false,
+    "reportMissingTypeStubs": false,
+    "reportMissingTypeArgument": false,
+    "reportMissingImports": false,
+
+    "reportUnknownVariableType": false,
+    "reportUnknownMemberType": false,
+    "reportUnknownParameterType": false,
+    "reportUnknownArgumentType": false,
+    "reportMissingParameterType": false,
+    "reportUnnecessaryIsInstance": false,
+    "reportUnusedImport": "warning",
+    "reportDeprecated": "warning"
+}

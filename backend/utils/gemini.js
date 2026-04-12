@@ -12,7 +12,7 @@ const analyzeWithGemini = async (input) => {
             return null;
         }
 
-        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
         const promptText = `
         You are an expert career advisor and technical recruiter. 
@@ -42,7 +42,17 @@ const analyzeWithGemini = async (input) => {
             "skillGap": {
                 "matchingPercentage": 85,
                 "gapPercentage": 15
-            }
+            },
+            "atsScore": {
+                "score": 85,
+                "breakdown": {
+                    "Structure": 90,
+                    "KeywordOptimization": 80,
+                    "Impact": 70,
+                    "Formatting": 100
+                }
+            },
+            "executiveSummary": "A 2-3 sentence descriptive executive summary of the analysis..."
         }
 
         Be realistic and data-driven. Consider current market trends in India.

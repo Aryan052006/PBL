@@ -3,9 +3,10 @@
 import { useAuth } from "../context/AuthContext";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Search, Code2, Cpu, BarChart3, Globe, Sparkles, Loader2, Zap, Target } from "lucide-react";
+import { Search, Code2, Cpu, BarChart3, Globe, Sparkles, Loader2, Zap, Target, Lock, Download } from "lucide-react";
 import DomainCard from "../components/DomainCard";
 import DomainDetailModal from "../components/DomainDetailModal";
+import { useRouter } from "next/navigation";
 
 const ANALYSIS_STEPS = [
     "Analyzing your academic profile...",
@@ -17,6 +18,8 @@ const ANALYSIS_STEPS = [
 
 export default function DomainsPage() {
     const { user } = useAuth();
+    const router = useRouter();
+    const [authPrompt, setAuthPrompt] = useState(false);
     const [formData, setFormData] = useState({
         branch: "ce",
         year: "1",
@@ -27,6 +30,7 @@ export default function DomainsPage() {
     const [analysisStep, setAnalysisStep] = useState(0);
     const [showResults, setShowResults] = useState(false);
     const [strategy, setStrategy] = useState<any>(null);
+    const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
     // Explore Modal State
     const [selectedDomain, setSelectedDomain] = useState<any>(null);
@@ -52,9 +56,17 @@ export default function DomainsPage() {
 
     const handleSearch = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // ── Auth Guard ──────────────────────────────────────────────
+        if (!user) {
+            setAuthPrompt(true);
+            return;
+        }
+
         setIsAnalyzing(true);
         setAnalysisStep(0);
         setShowResults(false);
+        setErrorMsg(null);
 
         // Start Analysis Simulation Interval
         const stepInterval = setInterval(() => {
@@ -72,7 +84,16 @@ export default function DomainsPage() {
                 body: JSON.stringify({
                     branch: formData.branch,
                     year: formData.year,
-                    skills: formData.skills.split(",").map(s => s.trim())
+                    skills: formData.skills.split(",").map(s => s.trim()).filter(Boolean),
+                    interests: user.interests || [],
+                    cgpa: user.cgpa || 0,
+                    projects_count: user.projects_count || 0,
+                    internship_experience: user.internship_experience || 0,
+                    certifications: user.certifications || 0,
+                    coding_platform_rating: user.coding_platform_rating || 0,
+                    communication_score: user.communication_score || 5,
+                    aptitude_score: user.aptitude_score || 50,
+                    hackathon_count: user.hackathon_count || 0,
                 }),
             });
             const data = await res.json();
@@ -83,6 +104,8 @@ export default function DomainsPage() {
                 if (data.success) {
                     setStrategy(data.data);
                     setShowResults(true);
+                } else {
+                    setErrorMsg(data.msg || "Analysis failed to complete. Please try again.");
                 }
             }, 4000);
 
@@ -90,6 +113,7 @@ export default function DomainsPage() {
             console.error("Analysis failed", err);
             clearInterval(stepInterval);
             setIsAnalyzing(false);
+            setErrorMsg("Network error: Could not reach the analysis service.");
         }
     };
 
@@ -118,6 +142,82 @@ export default function DomainsPage() {
             console.error("Explore failed", err);
         } finally {
             setIsExploreLoading(false);
+        }
+    };
+
+    const handleDownloadReport = async () => {
+        if (!strategy) return;
+        try {
+            const { jsPDF } = await import("jspdf");
+            
+            const doc = new jsPDF({
+                orientation: "portrait",
+                unit: "mm",
+                format: "a4"
+            });
+
+            const margin = 20;
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const textWidth = pageWidth - (margin * 2);
+            let y = margin;
+
+            const addWrappedText = (text: string, fontSize: number, isBold: boolean = false, increment: number = 0) => {
+                doc.setFont("helvetica", isBold ? "bold" : "normal");
+                doc.setFontSize(fontSize);
+                const lines = doc.splitTextToSize(text, textWidth);
+                
+                if (y + (lines.length * (fontSize * 0.4)) > 280) {
+                    doc.addPage();
+                    y = margin;
+                }
+                
+                doc.text(lines, margin, y);
+                y += (lines.length * (fontSize * 0.4)) + increment;
+            };
+
+            // Title
+            addWrappedText("CareerForge - Domain Analysis Report", 22, true, 10);
+            addWrappedText(`Generated on: ${new Date().toLocaleDateString()}`, 10, false, 15);
+
+            // Career Strategy
+            addWrappedText("Career Strategy", 16, true, 8);
+            addWrappedText(strategy.globalAssessment || "", 11, false, 8);
+            addWrappedText(`Top Insight: ${strategy.topInsight || ""}`, 11, true, 12);
+
+            // Skills Overlap
+            if (strategy.skillsOverlap) {
+                addWrappedText("Skills Overlap", 16, true, 8);
+                const matched = strategy.skillsOverlap.matched || [];
+                const missing = strategy.skillsOverlap.missing || [];
+                
+                addWrappedText("Strengths:", 12, true, 4);
+                addWrappedText(matched.length > 0 ? matched.join(", ") : "None identified", 11, false, 8);
+                
+                addWrappedText("Priority Gaps:", 12, true, 4);
+                addWrappedText(missing.length > 0 ? missing.join(", ") : "None identified", 11, false, 12);
+            }
+
+            // Recommended Paths
+            if (strategy.recommendations && strategy.recommendations.length > 0) {
+                addWrappedText("Recommended Paths", 16, true, 8);
+                
+                strategy.recommendations.forEach((rec: any, idx: number) => {
+                    addWrappedText(`${idx + 1}. ${rec.title}`, 14, true, 6);
+                    addWrappedText(`Match Score: ${rec.matchScore}% | Market Demand: ${rec.marketDemand} | Effort: ${rec.effortToMaster}`, 10, false, 4);
+                    if (rec.recommended) {
+                        addWrappedText("★ Top Recommendation", 10, true, 4);
+                    }
+                    addWrappedText(`Key Skills: ${(rec.tags || []).join(", ")}`, 10, false, 4);
+                    addWrappedText(rec.reasoning || "", 11, false, 4);
+                    addWrappedText(rec.description || "", 11, false, 12);
+                });
+            }
+
+            doc.save(`CareerForge_Domain_Analysis_${new Date().toISOString().slice(0, 10)}.pdf`);
+            
+        } catch (err) {
+            console.error("PDF generation failed:", err);
+            alert("Failed to generate text PDF.");
         }
     };
 
@@ -206,6 +306,16 @@ export default function DomainsPage() {
                                 Analyze Profile
                             </button>
                         </form>
+
+                        {errorMsg && (
+                            <motion.div 
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="mt-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-center"
+                            >
+                                <p className="text-red-400 font-medium">{errorMsg}</p>
+                            </motion.div>
+                        )}
                     </motion.div>
                 )
             }
@@ -241,7 +351,19 @@ export default function DomainsPage() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     className="space-y-12"
+                    id="strategy-dashboard"
                 >
+                    {/* Download Report Button */}
+                    <div className="flex justify-end mb-2">
+                        <button
+                            onClick={handleDownloadReport}
+                            className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-secondary/10 border border-secondary/20 text-secondary hover:bg-secondary/20 transition-all text-sm font-medium"
+                        >
+                            <Download className="w-4 h-4" />
+                            Download Report
+                        </button>
+                    </div>
+
                     {/* Dashboard Header: Strategy Overview */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div className="md:col-span-2 glass-panel p-8 rounded-3xl bg-gradient-to-br from-white/5 to-transparent border-white/10">
@@ -301,6 +423,7 @@ export default function DomainsPage() {
                                     initial={{ opacity: 0, y: 20 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ delay: index * 0.1 }}
+                                    className="h-full"
                                 >
                                     <DomainCard
                                         {...domain}
@@ -333,6 +456,43 @@ export default function DomainsPage() {
                 domain={selectedDomain || {}}
                 isLoading={isExploreLoading}
             />
+
+            {/* ── Auth Prompt Overlay ─────────────────────────────── */}
+            {authPrompt && (
+                <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="glass-panel p-8 rounded-3xl max-w-md w-full text-center space-y-6"
+                    >
+                        <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+                            <Lock className="w-8 h-8 text-primary" />
+                        </div>
+                        <h2 className="text-2xl font-clash font-bold text-white">Sign Up to Unlock</h2>
+                        <p className="text-gray-400">
+                            Create a free account to access our AI-powered domain recommendation engine and get personalized career insights.
+                        </p>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setAuthPrompt(false)}
+                                className="flex-1 py-3 bg-white/5 border border-white/10 rounded-xl font-medium text-gray-400 hover:bg-white/10 transition-all"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={() => router.push("/sign-up")}
+                                className="flex-[2] py-3 bg-primary rounded-xl font-bold text-white shadow-[0_0_20px_rgba(255,46,99,0.3)] hover:shadow-[0_0_30px_rgba(255,46,99,0.5)] transition-all"
+                            >
+                                Sign Up Free
+                            </button>
+                        </div>
+                        <p className="text-xs text-gray-500">
+                            Already have an account?{" "}
+                            <button onClick={() => router.push("/sign-in")} className="text-secondary hover:underline">Sign In</button>
+                        </p>
+                    </motion.div>
+                </div>
+            )}
         </main >
     );
 }

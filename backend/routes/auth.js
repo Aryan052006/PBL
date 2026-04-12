@@ -5,58 +5,55 @@ const User = require('../models/User');
 const { sendOtpEmail } = require('../utils/email');
 
 const router = express.Router();
-const { GoogleGenerativeAI } = require("@google/generative-ai");
 
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_KEY);
+// Helper: safe user object (strip password, internal fields)
+const safeUser = (user) => ({
+    id: user._id,
+    name: user.name,
+    email: user.email,
+    branch: user.branch,
+    year: user.year,
+    birthdate: user.birthdate,
+    skills: user.skills,
+    interests: user.interests,
+    cgpa: user.cgpa,
+    projects_count: user.projects_count,
+    internship_experience: user.internship_experience,
+    certifications: user.certifications,
+    coding_platform_rating: user.coding_platform_rating,
+    communication_score: user.communication_score,
+    aptitude_score: user.aptitude_score,
+    hackathon_count: user.hackathon_count,
+    roadmap: user.roadmap,
+    skillAnalysis: user.skillAnalysis,
+    futureDevelopment: user.futureDevelopment,
+});
 
-// @route   POST /api/auth/signup-init
-// @desc    Initialize signup, send OTP
-// @access  Public
+// @route POST /api/auth/signup-init
 router.post('/signup-init', async (req, res) => {
     const { name, email, password } = req.body;
-    console.log(`Signup Init Request received for: ${email}`);
-
     try {
-        console.log("Searching for existing user...");
         let user = await User.findOne({ email });
-
         if (user && user.isVerified) {
             return res.status(400).json({ msg: 'User already exists and is verified' });
         }
 
-        // Generate 6-digit OTP
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
-        const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
-
+        const otpExpires = new Date(Date.now() + 10 * 60 * 1000);
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
         if (!user) {
-            user = new User({
-                name,
-                email,
-                password: hashedPassword,
-                verificationOtp: otp,
-                otpExpires,
-                isVerified: false,
-                // Placeholders for required fields if any (though we made them optional)
-                branch: 'Pending',
-                year: 'Pending'
-            });
+            user = new User({ name, email, password: hashedPassword, verificationOtp: otp, otpExpires, isVerified: false });
         } else {
-            // Update existing unverified user
             user.name = name;
             user.password = hashedPassword;
             user.verificationOtp = otp;
             user.otpExpires = otpExpires;
         }
 
-        console.log("User record updated/created, saving to DB...");
         await user.save();
-        console.log("User saved, attempting to send OTP...");
         await sendOtpEmail(email, otp);
-
-        console.log("OTP process complete, sending response.");
         res.json({ msg: 'OTP sent to email', email });
     } catch (err) {
         console.error("Signup Init Error:", err.message);
@@ -64,52 +61,35 @@ router.post('/signup-init', async (req, res) => {
     }
 });
 
-// @route   POST /api/auth/verify-otp
-// @desc    Verify OTP
-// @access  Public
+// @route POST /api/auth/verify-otp
 router.post('/verify-otp', async (req, res) => {
     const { email, otp } = req.body;
-
     try {
         const user = await User.findOne({ email });
-
-        if (!user) {
-            return res.status(404).json({ msg: 'User not found' });
-        }
-
-        if (user.verificationOtp !== otp) {
-            return res.status(400).json({ msg: 'Invalid OTP' });
-        }
-
-        if (user.otpExpires < Date.now()) {
-            return res.status(400).json({ msg: 'OTP expired' });
-        }
+        if (!user) return res.status(404).json({ msg: 'User not found' });
+        if (user.verificationOtp !== otp) return res.status(400).json({ msg: 'Invalid OTP' });
+        if (user.otpExpires < Date.now()) return res.status(400).json({ msg: 'OTP expired' });
 
         user.isVerified = true;
         user.verificationOtp = undefined;
         user.otpExpires = undefined;
-
         await user.save();
-
         res.json({ msg: 'Email verified successfully', success: true });
     } catch (err) {
-        console.error("Verify OTP Error:", err.message);
         res.status(500).json({ msg: 'Server error' });
     }
 });
 
-// @route   POST /api/auth/complete-signup
-// @desc    Complete signup (Birthdate + Domain Info)
-// @access  Public (or Private with token)
+// @route POST /api/auth/complete-signup
 router.post('/complete-signup', async (req, res) => {
-    const { email, birthdate, branch, year, skills, interests } = req.body;
-
+    const {
+        email, birthdate, branch, year, skills, interests,
+        cgpa, projects_count, internship_experience, certifications,
+        coding_platform_rating, communication_score, aptitude_score, hackathon_count
+    } = req.body;
     try {
         let user = await User.findOne({ email });
-
-        if (!user || !user.isVerified) {
-            return res.status(401).json({ msg: 'User not found or not verified' });
-        }
+        if (!user || !user.isVerified) return res.status(401).json({ msg: 'User not found or not verified' });
 
         user.birthdate = birthdate;
         user.branch = branch;
@@ -117,177 +97,195 @@ router.post('/complete-signup', async (req, res) => {
         user.skills = skills || [];
         user.interests = interests || [];
 
-        // Generate initial roadmap and analysis if skills are provided
-        if (user.skills.length > 0) {
-            try {
-                const prompt = `
-                    Analyze the profile of a ${user.branch} student in ${user.year}.
-                    Current Skills: ${user.skills.join(', ')}. 
-                    Interests: ${user.interests.join(', ')}.
-                    
-                    Provide a career analysis in JSON format with exactly these keys:
-                    1. "roadmap": An array of objects: [{"domainTitle": "String", "skillsToLearn": ["String"], "skillsHave": ["String"], "recommended": true}]
-                    2. "skillAnalysis": A short 2-3 sentence paragraph assessing their current skill set relative to their branch and interests. Mention their strengths and one specific area for improvement.
-                    3. "futureDevelopment": An array of 3-5 specific technical topics, soft skills, or certifications they should focus on over the next 6-12 months.
-                    
-                    Respond ONLY with the raw JSON object.
-                `;
-                const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-                const result = await model.generateContent(prompt);
-                const text = result.response.text().replace(/```json/g, '').replace(/```/g, '').trim();
-
-                const analysis = JSON.parse(text);
-                user.roadmap = analysis.roadmap || [];
-                user.skillAnalysis = analysis.skillAnalysis || "Analysis pending...";
-                user.futureDevelopment = analysis.futureDevelopment || ["More data required for suggestions"];
-
-            } catch (aiErr) {
-                console.error("Analysis Init Error:", aiErr);
-                user.roadmap = [{ domainTitle: "General Path", skillsToLearn: ["TBA"], skillsHave: user.skills, recommended: true }];
-                user.skillAnalysis = "We're having trouble analyzing your skills right now. Check back later in your profile!";
-                user.futureDevelopment = ["Explore new technologies", "Build projects", "Network with professionals"];
-            }
-        }
+        // KNN features
+        if (cgpa !== undefined) user.cgpa = parseFloat(cgpa) || 0;
+        if (projects_count !== undefined) user.projects_count = parseInt(projects_count) || 0;
+        if (internship_experience !== undefined) user.internship_experience = parseInt(internship_experience) || 0;
+        if (certifications !== undefined) user.certifications = parseInt(certifications) || 0;
+        if (coding_platform_rating !== undefined) user.coding_platform_rating = parseInt(coding_platform_rating) || 0;
+        if (communication_score !== undefined) user.communication_score = parseInt(communication_score) || 5;
+        if (aptitude_score !== undefined) user.aptitude_score = parseFloat(aptitude_score) || 50;
+        if (hackathon_count !== undefined) user.hackathon_count = parseInt(hackathon_count) || 0;
 
         await user.save();
 
         const payload = { user: { id: user.id } };
         jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: 360000 }, (err, token) => {
             if (err) throw err;
-            res.json({ token, user });
+            res.json({ token, user: safeUser(user) });
         });
-
     } catch (err) {
         console.error("Complete Signup Error:", err.message);
         res.status(500).json({ msg: 'Server error' });
     }
 });
 
-// @route   POST /api/auth/login
-// @desc    Auth user & get token
-// @access  Public
+// @route POST /api/auth/login
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
-
     try {
         let user = await User.findOne({ email });
-
-        if (!user) {
-            return res.status(400).json({ msg: 'Invalid Credentials' });
-        }
-
-        if (!user.isVerified) {
-            return res.status(400).json({ msg: 'Please verify your email first' });
-        }
+        if (!user) return res.status(400).json({ msg: 'Invalid Credentials' });
+        if (!user.isVerified) return res.status(400).json({ msg: 'Please verify your email first' });
 
         const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) return res.status(400).json({ msg: 'Invalid Credentials' });
 
-        if (!isMatch) {
-            return res.status(400).json({ msg: 'Invalid Credentials' });
-        }
-
-        const payload = {
-            user: {
-                id: user.id,
-            },
-        };
-
-        jwt.sign(
-            payload,
-            process.env.JWT_SECRET,
-            { expiresIn: 360000 },
-            (err, token) => {
-                if (err) throw err;
-                res.json({ token, user: { id: user.id, name: user.name, email: user.email, branch: user.branch, year: user.year, birthdate: user.birthdate, skills: user.skills, roadmap: user.roadmap } });
-            }
-        );
+        const payload = { user: { id: user.id } };
+        jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: 360000 }, (err, token) => {
+            if (err) throw err;
+            res.json({ token, user: safeUser(user) });
+        });
     } catch (err) {
         console.error("Login Error:", err);
         res.status(500).json({ msg: 'Server error', error: err.message });
     }
 });
 
-// @route   GET /api/auth/user
-// @desc    Get logged in user
-// @access  Private (Needs middleware)
-// @route   PUT /api/auth/onboarding
-// @desc    Update user with onboarding data (DOB, Skills) & Generate Roadmap
-// @access  Public (Should be Private in real app, but using ID from body for now or simple update)
+// @route PUT /api/auth/onboarding
+// Full onboarding — collects all KNN features (5-step form)
 router.put('/onboarding', async (req, res) => {
-    const { userId, dob, skills } = req.body;
+    const {
+        userId, dob, branch, year, skills, interests,
+        cgpa, projects_count, internship_experience, certifications,
+        coding_platform_rating, communication_score, aptitude_score, hackathon_count
+    } = req.body;
 
     try {
         let user = await User.findById(userId);
+        if (!user) return res.status(404).json({ msg: 'User not found' });
 
-        if (!user) {
-            return res.status(404).json({ msg: 'User not found' });
-        }
+        // Update all profile fields
+        if (dob) user.birthdate = dob;
+        if (branch) user.branch = branch;
+        if (year) user.year = year;
+        if (skills) user.skills = skills;
+        if (interests) user.interests = interests;
 
-        user.dob = dob;
-        user.skills = skills;
+        // KNN features
+        if (cgpa !== undefined) user.cgpa = parseFloat(cgpa);
+        if (projects_count !== undefined) user.projects_count = parseInt(projects_count);
+        if (internship_experience !== undefined) user.internship_experience = parseInt(internship_experience);
+        if (certifications !== undefined) user.certifications = parseInt(certifications);
+        if (coding_platform_rating !== undefined) user.coding_platform_rating = parseInt(coding_platform_rating);
+        if (communication_score !== undefined) user.communication_score = parseInt(communication_score);
+        if (aptitude_score !== undefined) user.aptitude_score = parseFloat(aptitude_score);
+        if (hackathon_count !== undefined) user.hackathon_count = parseInt(hackathon_count);
 
-        // Intelligent Roadmap Generation via OpenAI
+        // Generate roadmap via ML service, fallback to Gemini
         try {
-            const prompt = `
-                User has the following skills: ${skills.join(', ')}.
-                Branch: ${user.branch}, Year: ${user.year}.
-                
-                Generate a recommended learning roadmap for this user.
-                Provide 1 to 2 distinct paths/domains (e.g., "Fullstack Development", "Data Science", "Cloud Engineering") that logically follow their current skills.
-                For each path, list "skillsToLearn" (next logical steps) and "skillsHave" (from their current list).
-                
-                Respond ONLY with a valid JSON array of objects with this structure:
-                [
-                    {
-                        "domainTitle": "String",
-                        "skillsToLearn": ["String"],
-                        "skillsHave": ["String"],
-                        "recommended": true
-                    }
-                ]
-                Do not include markdown formatting (like \`\`\`json). Just the raw JSON string.
-            `;
+            const { getRecommendationsML } = require('../utils/mlService');
+            const profile = {
+                branch: user.branch, year: user.year,
+                skills: user.skills, interests: user.interests,
+                cgpa: user.cgpa, projects_count: user.projects_count,
+                internship_experience: user.internship_experience,
+                certifications: user.certifications,
+                coding_platform_rating: user.coding_platform_rating,
+                communication_score: user.communication_score,
+                aptitude_score: user.aptitude_score, hackathon_count: user.hackathon_count
+            };
 
-            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-            const result = await model.generateContent(prompt);
-            const response = await result.response;
-            const text = response.text();
-
-            // Clean markdown if present
-            const cleanContent = text.replace(/```json/g, '').replace(/```/g, '').trim();
-
-            let roadmap = [];
-            try {
-                roadmap = JSON.parse(cleanContent);
-            } catch (e) {
-                console.error("JSON Parse Error:", e);
-                // Fallback valid JSON if parse fails
-                roadmap = [{
-                    domainTitle: "Web Development (Fallback)",
-                    skillsToLearn: ["React", "Node.js"],
-                    skillsHave: skills,
-                    recommended: true
-                }];
+            const mlRec = await getRecommendationsML(profile);
+            if (mlRec && mlRec.recommendations && mlRec.recommendations.length > 0) {
+                // Convert ML recommendations → roadmap format
+                user.roadmap = mlRec.recommendations.slice(0, 3).map(r => ({
+                    domainTitle: r.title,
+                    skillsToLearn: r.tags || [],
+                    skillsHave: user.skills.slice(0, 3),
+                    recommended: r.recommended || false,
+                }));
+                user.skillAnalysis = mlRec.globalAssessment || '';
+                user.futureDevelopment = mlRec.skillsOverlap?.missing || [];
             }
-
-            user.roadmap = roadmap;
-        } catch (aiError) {
-            console.error("OpenAI Error:", aiError);
-            // Fallback if AI fails completely
-            user.roadmap = [{
-                domainTitle: "Web Development Fundamentals",
-                skillsToLearn: ["React", "Node.js"],
-                skillsHave: skills,
-                recommended: true
-            }];
+        } catch (mlErr) {
+            console.warn('[Onboarding] ML roadmap generation failed:', mlErr.message);
+            // Gemini fallback
+            try {
+                const { GoogleGenerativeAI } = require('@google/generative-ai');
+                const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_KEY);
+                const prompt = `
+                    Analyze the profile of a ${user.branch} student in ${user.year}.
+                    Skills: ${user.skills.join(', ')}. Interests: ${user.interests.join(', ')}.
+                    CGPA: ${user.cgpa}. Projects: ${user.projects_count}. Internships: ${user.internship_experience} months.
+                    Provide JSON with: "roadmap" (array of {domainTitle,skillsToLearn,skillsHave,recommended}),
+                    "skillAnalysis" (2-3 sentences), "futureDevelopment" (array of 3-5 items).
+                    Raw JSON only.
+                `;
+                const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+                const result = await model.generateContent(prompt);
+                const text = result.response.text().replace(/```json/g, '').replace(/```/g, '').trim();
+                const analysis = JSON.parse(text);
+                user.roadmap = analysis.roadmap || [];
+                user.skillAnalysis = analysis.skillAnalysis || '';
+                user.futureDevelopment = analysis.futureDevelopment || [];
+            } catch (geminiErr) {
+                console.warn('[Onboarding] Gemini roadmap also failed:', geminiErr.message);
+                user.roadmap = [{ domainTitle: 'General Tech', skillsToLearn: ['Build projects'], skillsHave: user.skills.slice(0, 2), recommended: true }];
+                user.skillAnalysis = 'Complete your profile to get personalized AI insights.';
+                user.futureDevelopment = ['Build domain-specific projects', 'Earn a certification', 'Participate in hackathons'];
+            }
         }
 
         await user.save();
-
-        res.json({ user });
+        res.json({ user: safeUser(user) });
 
     } catch (err) {
-        console.error(err.message);
+        console.error('[Onboarding] Error:', err.message);
+        res.status(500).json({ msg: 'Server error' });
+    }
+});
+
+// @route PUT /api/auth/profile/update
+// Allow updating profile from the Profile page
+router.put('/profile/update', async (req, res) => {
+    const {
+        userId, skills, interests, cgpa, projects_count,
+        internship_experience, certifications, coding_platform_rating,
+        communication_score, aptitude_score, hackathon_count, branch, year
+    } = req.body;
+
+    try {
+        let user = await User.findById(userId);
+        if (!user) return res.status(404).json({ msg: 'User not found' });
+
+        // Update only provided fields
+        const updates = {
+            skills, interests, branch, year,
+            cgpa, projects_count, internship_experience, certifications,
+            coding_platform_rating, communication_score, aptitude_score, hackathon_count
+        };
+        Object.entries(updates).forEach(([key, val]) => {
+            if (val !== undefined && val !== null) user[key] = val;
+        });
+
+        // Regenerate roadmap after update
+        try {
+            const { getRecommendationsML } = require('../utils/mlService');
+            const mlRec = await getRecommendationsML({
+                branch: user.branch, year: user.year, skills: user.skills,
+                interests: user.interests, cgpa: user.cgpa,
+                projects_count: user.projects_count, internship_experience: user.internship_experience,
+                certifications: user.certifications, coding_platform_rating: user.coding_platform_rating,
+                communication_score: user.communication_score, aptitude_score: user.aptitude_score,
+                hackathon_count: user.hackathon_count
+            });
+            if (mlRec?.recommendations?.length > 0) {
+                user.roadmap = mlRec.recommendations.slice(0, 3).map(r => ({
+                    domainTitle: r.title, skillsToLearn: r.tags || [],
+                    skillsHave: user.skills.slice(0, 3), recommended: r.recommended || false,
+                }));
+                user.skillAnalysis = mlRec.globalAssessment || user.skillAnalysis;
+                user.futureDevelopment = mlRec.skillsOverlap?.missing || user.futureDevelopment;
+            }
+        } catch (e) {
+            console.warn('[ProfileUpdate] ML regen failed:', e.message);
+        }
+
+        await user.save();
+        res.json({ user: safeUser(user) });
+    } catch (err) {
+        console.error('[ProfileUpdate] Error:', err.message);
         res.status(500).json({ msg: 'Server error' });
     }
 });
