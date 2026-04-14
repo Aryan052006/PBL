@@ -7,8 +7,8 @@ import SectionHeader from "../ui/SectionHeader";
 const features = [
     {
         icon: <Brain className="w-7 h-7" />,
-        title: "ML Domain Matching",
-        description: "KNN-powered algorithm analyzes your skills and maps you to the highest-fit engineering domains with precision scoring.",
+        title: "Smart Domain Matching",
+        description: "Our advanced analysis engine evaluates your skills and maps you to the highest-fit engineering domains with precision scoring.",
         gradient: "from-violet-500/20 to-fuchsia-500/20",
         borderGlow: "group-hover:shadow-[0_0_30px_rgba(139,92,246,0.15)]",
     },
@@ -43,7 +43,7 @@ const features = [
     {
         icon: <Sparkles className="w-7 h-7" />,
         title: "Smart Boosters",
-        description: "LLM-generated actionable advice tailored to your profile — not generic tips, but precision-crafted improvements.",
+        description: "Context-aware actionable advice tailored to your profile — not generic tips, but precision-crafted improvements.",
         gradient: "from-amber-500/20 to-yellow-500/20",
         borderGlow: "group-hover:shadow-[0_0_30px_rgba(245,158,11,0.15)]",
     },
@@ -62,7 +62,7 @@ export default function FeaturesSection() {
                     badgeIcon={<Sparkles className="w-4 h-4" />}
                     title="Everything You Need to"
                     highlight="Launch Your Career"
-                    description="Our ML pipeline and LLM analysis work together to provide the most comprehensive career intelligence platform."
+                    description="Our advanced analysis engine provides the most comprehensive career intelligence platform."
                 />
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

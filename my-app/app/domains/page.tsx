@@ -472,7 +472,7 @@ export default function DomainsPage() {
                         </div>
                         <h2 className="text-2xl font-clash font-bold text-white">Sign Up to Unlock</h2>
                         <p className="text-gray-400">
-                            Create a free account to access our AI-powered domain recommendation engine and get personalized career insights.
+                            Create a free account to access our intelligent domain recommendation engine and get personalized career insights.
                         </p>
                         <div className="flex gap-3">
                             <button

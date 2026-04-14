@@ -193,7 +193,8 @@ export default function Navbar() {
                                     onClick={() => setIsOpen(false)}
                                     className="w-full py-4 rounded-2xl bg-primary text-white text-center font-bold shadow-xl active:scale-[0.98] transition-all"
                                 >
-                                    Get Started
+                                    Join Now
+
                                 </Link>
                             )}
                         </div>

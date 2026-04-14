@@ -15,8 +15,8 @@ const steps = [
     {
         number: "02",
         icon: <Cpu className="w-6 h-6" />,
-        title: "ML Analysis",
-        description: "KNN models match you to the best engineering domains while an LLM generates a full career assessment.",
+        title: "Intelligent Analysis",
+        description: "Our advanced analysis engine matches you to the best engineering domains while providing a comprehensive career assessment.",
         accent: "secondary",
     },
     {

@@ -30,24 +30,8 @@ export default function Hero() {
                     Stop guessing. Get data-driven domain recommendations and portfolio analysis tailored to your skills.
                 </p>
 
-                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-8">
-                    <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="px-8 py-4 bg-primary text-white rounded-xl font-semibold text-lg hover:bg-opacity-90 transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(255,46,99,0.5)]"
-                    >
-                        Get Started
-                        <ArrowRight className="w-5 h-5" />
-                    </motion.button>
+                {/* Buttons removed as per user request */}
 
-                    <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="px-8 py-4 glass-panel text-foreground rounded-xl font-medium text-lg hover:bg-white/5 transition-all"
-                    >
-                        View Demo
-                    </motion.button>
-                </div>
             </motion.div>
         </section>
     );
