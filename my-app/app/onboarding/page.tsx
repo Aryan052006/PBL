@@ -98,7 +98,7 @@ export default function OnboardingPage() {
         setIsLoading(true);
         setError("");
         try {
-            const res = await fetch("http://127.0.0.1:5000/api/auth/onboarding", {
+            const res = await fetch("http://localhost:5000/api/auth/onboarding", {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

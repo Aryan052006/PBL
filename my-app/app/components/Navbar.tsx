@@ -38,7 +38,7 @@ export default function Navbar() {
                 scrolled ? "py-2.5 max-w-5xl shadow-2xl" : "py-4"
             )}>
                 {/* Logo Section */}
-                <Link href="/" className="group flex items-center gap-2.5 outline-none">
+                <Link href="/" className="group flex items-center gap-2.5 outline-none" aria-label="CareerForge Home">
                     <div className="relative">
                         <div className="absolute inset-0 bg-secondary/20 blur-md rounded-full group-hover:bg-secondary/40 transition-colors" />
                         <Sparkles className="relative w-6 h-6 text-secondary transform group-hover:rotate-12 transition-transform duration-300" />
@@ -92,6 +92,7 @@ export default function Navbar() {
                                 onClick={logout}
                                 className="p-2.5 rounded-xl text-gray-400 hover:text-red-400 hover:bg-red-500/5 transition-all duration-300 active:scale-90"
                                 title="Sign Out"
+                                aria-label="Sign out of your account"
                             >
                                 <LogOut className="w-5 h-5" />
                             </button>
@@ -123,6 +124,8 @@ export default function Navbar() {
                 <button
                     onClick={() => setIsOpen(!isOpen)}
                     className="md:hidden relative w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 text-white active:scale-90 transition-transform"
+                    aria-label={isOpen ? "Close navigation menu" : "Open navigation menu"}
+                    aria-expanded={isOpen}
                 >
                     <AnimatePresence mode="wait">
                         {isOpen ? (

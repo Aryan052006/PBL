@@ -30,7 +30,27 @@
 
   --font-clash: "Clash Display", sans-serif;
   --font-outfit: "Outfit", sans-serif;
+
+  /* Spacing scale */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+  --space-3xl: 4rem;
+
+  /* Border radius scale */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-2xl: 2rem;
 }
+
+/* ═══════════════════════════════════════════════════════════
+   Base
+   ═══════════════════════════════════════════════════════════ */
 
 body {
   background-color: var(--background);
@@ -42,7 +62,66 @@ body {
     radial-gradient(circle at 85% 30%, rgba(255, 46, 99, 0.06) 0%, transparent 25%);
 }
 
-/* Utilities for Glassmorphism */
+/* ═══════════════════════════════════════════════════════════
+   WCAG 2.1 Focus Rings — Keyboard Navigation
+   ═══════════════════════════════════════════════════════════ */
+
+*:focus-visible {
+  outline: 2px solid var(--secondary);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Remove focus ring from mouse clicks */
+*:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Custom Scrollbar
+   ═══════════════════════════════════════════════════════════ */
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Dark Select & Option Elements
+   ═══════════════════════════════════════════════════════════ */
+
+select {
+  color-scheme: dark;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239ca3af' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+}
+
+select option {
+  background-color: #13141f;
+  color: #e0e1e6;
+  padding: 8px 12px;
+}
+
+select option:checked {
+  background-color: #1e2035;
+  color: #fff;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Glassmorphism Utilities
+   ═══════════════════════════════════════════════════════════ */
+
 .glass-panel {
   background: rgba(30, 32, 45, 0.5);
   backdrop-filter: blur(16px) saturate(180%);
@@ -61,6 +140,10 @@ body {
   box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
 }
 
+/* ═══════════════════════════════════════════════════════════
+   Text Gradients
+   ═══════════════════════════════════════════════════════════ */
+
 .text-gradient-primary {
   background: linear-gradient(135deg, #FF2E63 0%, #FF9F1C 100%);
   -webkit-background-clip: text;
@@ -75,6 +158,10 @@ body {
   -webkit-text-fill-color: transparent;
 }
 
+/* ═══════════════════════════════════════════════════════════
+   Premium Borders & Hovers
+   ═══════════════════════════════════════════════════════════ */
+
 .premium-border {
   position: relative;
   border: 1px solid transparent;
@@ -86,11 +173,103 @@ body {
   box-shadow: 0 0 20px rgba(8, 217, 214, 0.2);
 }
 
-/* PDF Export Safe Overrides — html2canvas cannot parse oklch/oklab (Tailwind v4 default) */
-/* Apply .pdf-safe to any element that gets captured for PDF export */
+/* ═══════════════════════════════════════════════════════════
+   Animations — Skeleton Shimmer
+   ═══════════════════════════════════════════════════════════ */
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.03) 25%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.03) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+  border-radius: var(--radius-md);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Animations — Pulse Glow (CTA, Loading States)
+   ═══════════════════════════════════════════════════════════ */
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(255, 46, 99, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(255, 46, 99, 0.4), 0 0 60px rgba(255, 46, 99, 0.1);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Animations — Spin (Loading Spinners)
+   ═══════════════════════════════════════════════════════════ */
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.animate-spin {
+  animation: spin 0.8s linear infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Animations — Float (Decorative Elements)
+   ═══════════════════════════════════════════════════════════ */
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Grid Pattern Background (Feature Section)
+   ═══════════════════════════════════════════════════════════ */
+
+.grid-pattern {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Counter Animation (Stats)
+   ═══════════════════════════════════════════════════════════ */
+
+@keyframes count-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.stat-animate {
+  animation: count-up 0.6s ease-out forwards;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PDF Export Safe Overrides — html2canvas cannot parse oklch/oklab (Tailwind v4 default)
+   ═══════════════════════════════════════════════════════════ */
+
 .pdf-safe,
 .pdf-safe * {
-  /* Reset all CSS color functions to plain RGB/Hex equivalents */
   --tw-backdrop-blur: blur(0px);
   -webkit-backdrop-filter: none !important;
   backdrop-filter: none !important;

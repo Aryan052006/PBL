@@ -78,7 +78,7 @@ export default function DomainsPage() {
 
         try {
             // Actual API Call
-            const res = await fetch("http://127.0.0.1:5000/api/recommend", {
+            const res = await fetch("http://localhost:5000/api/recommend", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -123,7 +123,7 @@ export default function DomainsPage() {
         setSelectedDomain({ title: domainTitle }); // Placeholder while loading
 
         try {
-            const res = await fetch("http://127.0.0.1:5000/api/explore", {
+            const res = await fetch("http://localhost:5000/api/explore", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -258,13 +258,14 @@ export default function DomainsPage() {
                                         name="branch"
                                         value={formData.branch}
                                         onChange={handleChange}
-                                        className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#FF2E63] transition-colors"
+                                        className="w-full bg-[#13141f] border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent transition-all appearance-none cursor-pointer"
+                                        style={{ colorScheme: "dark" }}
                                     >
-                                        <option value="ce">CE</option>
-                                        <option value="it">IT</option>
-                                        <option value="entc">ENTC</option>
-                                        <option value="ece">E & CE</option>
-                                        <option value="aids">AIDS</option>
+                                        <option value="ce" className="bg-[#13141f] text-white">CE</option>
+                                        <option value="it" className="bg-[#13141f] text-white">IT</option>
+                                        <option value="entc" className="bg-[#13141f] text-white">ENTC</option>
+                                        <option value="ece" className="bg-[#13141f] text-white">E &amp; CE</option>
+                                        <option value="aids" className="bg-[#13141f] text-white">AIDS</option>
                                     </select>
                                 </div>
                                 <div className="space-y-2">
@@ -273,12 +274,13 @@ export default function DomainsPage() {
                                         name="year"
                                         value={formData.year}
                                         onChange={handleChange}
-                                        className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-[#FF2E63] transition-colors"
+                                        className="w-full bg-[#13141f] border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent transition-all appearance-none cursor-pointer"
+                                        style={{ colorScheme: "dark" }}
                                     >
-                                        <option value="1">First Year</option>
-                                        <option value="2">Second Year</option>
-                                        <option value="3">Third Year</option>
-                                        <option value="4">Final Year</option>
+                                        <option value="1" className="bg-[#13141f] text-white">First Year</option>
+                                        <option value="2" className="bg-[#13141f] text-white">Second Year</option>
+                                        <option value="3" className="bg-[#13141f] text-white">Third Year</option>
+                                        <option value="4" className="bg-[#13141f] text-white">Final Year</option>
                                     </select>
                                 </div>
                             </div>
@@ -293,7 +295,7 @@ export default function DomainsPage() {
                                         value={formData.skills}
                                         onChange={handleChange}
                                         placeholder="e.g. Python, React, Arduino, VLSI, TensorFlow..."
-                                        className="w-full bg-black/20 border border-white/10 rounded-lg pl-10 pr-4 py-3 text-white focus:outline-none focus:border-[#FF2E63] transition-colors placeholder:text-gray-600"
+                                        className="w-full bg-[#13141f] border border-white/10 rounded-lg pl-10 pr-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent transition-all placeholder:text-gray-600"
                                     />
                                 </div>
                             </div>

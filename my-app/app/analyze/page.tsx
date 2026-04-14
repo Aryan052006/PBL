@@ -3,7 +3,10 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import PortfolioUploader from "../components/PortfolioUploader";
-import { AlertCircle, FileText, TrendingUp, DollarSign, Briefcase, Zap, CheckCircle2, ChevronRight, AlertTriangle, Target, LayoutDashboard, Rocket, Lock, Download, Activity } from "lucide-react";
+import MatchScoreCircle from "./components/MatchScoreCircle";
+import AtsScoreCard from "./components/AtsScoreCard";
+import ResumeBoosterList from "./components/ResumeBoosterList";
+import { AlertCircle, FileText, TrendingUp, DollarSign, Target, LayoutDashboard, Lock, Download, Activity } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { useRouter } from "next/navigation";
 
@@ -57,19 +60,16 @@ export default function AnalyzePage() {
                 format: "a4"
             });
 
-            // Initialize constants for layout
             const margin = 20;
             const pageWidth = doc.internal.pageSize.getWidth();
             const textWidth = pageWidth - (margin * 2);
             let y = margin;
 
-            // Helper to add text and update Y, handling page breaks
             const addWrappedText = (text: string, fontSize: number, isBold: boolean = false, increment: number = 0) => {
                 doc.setFont("helvetica", isBold ? "bold" : "normal");
                 doc.setFontSize(fontSize);
                 const lines = doc.splitTextToSize(text, textWidth);
                 
-                // Check if we need a new page
                 if (y + (lines.length * (fontSize * 0.4)) > 280) {
                     doc.addPage();
                     y = margin;
@@ -79,11 +79,9 @@ export default function AnalyzePage() {
                 y += (lines.length * (fontSize * 0.4)) + increment;
             };
 
-            // Title
             addWrappedText("CareerForge - Resume Analysis Report", 22, true, 10);
             addWrappedText(`Generated on: ${new Date().toLocaleDateString()}`, 10, false, 15);
 
-            // Match Analysis
             addWrappedText("Match Analysis", 16, true, 8);
             const score = result.skillGap?.matchingPercentage || result.score;
             addWrappedText(`Score: ${score}%`, 12, false, 6);
@@ -93,7 +91,6 @@ export default function AnalyzePage() {
             addWrappedText(`Best Fit Domain: ${result.bestFitDomain?.toUpperCase() || 'N/A'}`, 12, false, 6);
             addWrappedText(`Status: ${result.status || 'N/A'}`, 12, false, 12);
 
-            // Market Valuation
             addWrappedText("Market Valuation & Roles", 16, true, 8);
             addWrappedText(`Estimated Salary: ${result.salary?.formatted || 'N/A'}`, 12, false, 6);
             if (result.jobTitles && result.jobTitles.length > 0) {
@@ -102,13 +99,11 @@ export default function AnalyzePage() {
                 y += 6;
             }
 
-            // Industry Assessment
             if (result.marketAnalysis) {
                 addWrappedText("Industry Assessment", 16, true, 8);
                 addWrappedText(result.marketAnalysis, 11, false, 12);
             }
 
-            // Domain Fit
             if (result.domainSuitability && result.domainSuitability.length > 0) {
                 addWrappedText("Domain Fit Alternatives", 16, true, 8);
                 result.domainSuitability.forEach((suit: any) => {
@@ -117,7 +112,6 @@ export default function AnalyzePage() {
                 y += 8;
             }
 
-            // Resume Boosters
             const feedbackItems = result.boosters || result.tips;
             if (feedbackItems && feedbackItems.length > 0) {
                 addWrappedText("Resume Boosters & Advice", 16, true, 8);
@@ -127,13 +121,11 @@ export default function AnalyzePage() {
                 y += 6;
             }
 
-            // Missing Keywords
             if (result.gaps && result.gaps.length > 0) {
                 addWrappedText("Missing Keywords (Consider Adding)", 16, true, 8);
                 addWrappedText(result.gaps.join(", "), 11, false, 12);
             }
 
-            // Save the raw text PDF
             doc.save(`CareerForge_Resume_Analysis_${new Date().toISOString().slice(0, 10)}.pdf`);
             
         } catch (err) {
@@ -201,53 +193,18 @@ export default function AnalyzePage() {
                                 </button>
                             </div>
 
-                            {/* Top Stats Row */}
-                            <div className="flex flex-col gap-6">
-                                {/* Match Analysis Card (Full Width) */}
-                                <div className="glass-panel p-6 sm:p-8 rounded-3xl flex flex-col md:flex-row gap-8 items-center bg-gradient-to-br from-white/5 to-transparent border-white/10">
-                                    {/* Animated Match Score Circle */}
-                                    <div className="relative w-36 h-36 flex items-center justify-center shrink-0">
-                                        <svg className="w-full h-full transform -rotate-90">
-                                            <circle cx="72" cy="72" r="54" fill="transparent" stroke="rgba(255,255,255,0.05)" strokeWidth="8" />
-                                            <motion.circle
-                                                cx="72" cy="72" r="54"
-                                                fill="transparent"
-                                                stroke="#FF2E63"
-                                                strokeWidth="8"
-                                                strokeDasharray={2 * Math.PI * 54}
-                                                initial={{ strokeDashoffset: 2 * Math.PI * 54 }}
-                                                animate={{ strokeDashoffset: 2 * Math.PI * 54 * (1 - result.score / 100) }}
-                                                transition={{ duration: 2, ease: "easeOut" }}
-                                                strokeLinecap="round"
-                                            />
-                                        </svg>
-                                        <div className="absolute flex flex-col items-center">
-                                            <motion.span
-                                                initial={{ opacity: 0, scale: 0.5 }}
-                                                animate={{ opacity: 1, scale: 1 }}
-                                                transition={{ delay: 0.5 }}
-                                                className="text-4xl font-bold text-white"
-                                            >
-                                                {result.score}%
-                                            </motion.span>
-                                            <span className="text-[10px] text-gray-400 uppercase tracking-[0.2em] font-medium mt-1">Score</span>
-                                        </div>
-                                    </div>
-                                    
-                                    <div className="flex-1 space-y-3 text-center md:text-left min-w-0 md:border-l md:border-white/10 md:pl-8">
-                                        <p className="text-gray-400 text-sm font-medium uppercase tracking-widest">Best Fit Domain</p>
-                                        <h3 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white capitalize leading-tight">{result.bestFitDomain}</h3>
-                                        <div className="inline-block px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs sm:text-sm font-bold uppercase tracking-wider mt-2">
-                                            {result.status}
-                                        </div>
-                                    </div>
-                                </div>
+                            {/* Match Score Circle — Extracted Component */}
+                            <MatchScoreCircle
+                                score={result.score}
+                                bestFitDomain={result.bestFitDomain}
+                                status={result.status}
+                            />
 
-                                {/* Salary & ATS Row */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {/* Salary & Efficiency Card */}
+                            {/* Salary & ATS Row */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {/* Salary Card */}
                                 <div className="glass-panel p-6 rounded-3xl flex flex-col justify-center space-y-4 bg-gradient-to-br from-white/5 to-transparent border-white/10 relative overflow-hidden">
-                                    <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-green-500/10 blur-3xl rounded-full" />
+                                    <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-green-500/10 blur-3xl rounded-full pointer-events-none" />
                                     <div className="flex justify-between items-start">
                                         <div>
                                             <p className="text-gray-400 text-sm font-medium mb-1">Estimated Market Salary</p>
@@ -271,55 +228,17 @@ export default function AnalyzePage() {
                                     </div>
                                 </div>
 
-                                {/* ATS Compatibility Card */}
+                                {/* ATS Card — Extracted Component */}
                                 {result.atsScore ? (
-                                    <div className="glass-panel p-6 rounded-3xl flex flex-col justify-between space-y-4 bg-gradient-to-br from-white/5 to-transparent border-white/10 relative overflow-hidden">
-                                        <div className="absolute -right-8 -bottom-8 w-32 h-32 bg-blue-500/10 blur-3xl rounded-full" />
-                                        <div className="flex justify-between items-start mb-2">
-                                            <div>
-                                                <p className="text-gray-400 text-sm font-medium mb-1">ATS Compatibility</p>
-                                                <div className="flex items-baseline gap-2">
-                                                    <span className="text-3xl font-clash font-bold text-white">{result.atsScore.score}%</span>
-                                                    <span className="text-xs text-gray-500 uppercase tracking-widest font-medium">Score</span>
-                                                </div>
-                                            </div>
-                                            <div className="p-3 bg-blue-500/10 rounded-2xl text-blue-400 relative z-10">
-                                                <Activity className="w-6 h-6" />
-                                            </div>
-                                        </div>
-                                        
-                                        <div className="space-y-3 w-full relative z-10">
-                                            {[
-                                                { label: "Structure", val: result.atsScore.breakdown.Structure },
-                                                { label: "Keywords", val: result.atsScore.breakdown.KeywordOptimization },
-                                                { label: "Impact", val: result.atsScore.breakdown.Impact },
-                                                { label: "Formatting", val: result.atsScore.breakdown.Formatting },
-                                            ].map((metric, i) => (
-                                                <div key={i} className="flex flex-col gap-1">
-                                                    <div className="flex justify-between text-[10px] uppercase font-bold tracking-wider">
-                                                        <span className="text-gray-500">{metric.label}</span>
-                                                        <span className={metric.val >= 80 ? "text-green-400" : metric.val >= 50 ? "text-yellow-400" : "text-red-400"}>
-                                                            {metric.val}%
-                                                        </span>
-                                                    </div>
-                                                    <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-                                                        <motion.div 
-                                                            initial={{ width: 0 }}
-                                                            animate={{ width: `${metric.val}%` }}
-                                                            transition={{ duration: 1, delay: 0.5 + i * 0.1 }}
-                                                            className={`h-full ${metric.val >= 80 ? 'bg-green-500' : metric.val >= 50 ? 'bg-yellow-500' : 'bg-red-500'}`} 
-                                                        />
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
+                                    <AtsScoreCard
+                                        score={result.atsScore.score}
+                                        breakdown={result.atsScore.breakdown}
+                                    />
                                 ) : (
                                     <div className="glass-panel p-6 rounded-3xl flex flex-col items-center justify-center space-y-4 bg-gradient-to-br from-white/5 to-transparent border-white/10">
                                         <Activity className="w-8 h-8 text-gray-600 mb-2" />
                                     </div>
                                 )}
-                                </div>
                             </div>
 
                             {/* Market Analysis & Domain Suitability */}
@@ -330,7 +249,7 @@ export default function AnalyzePage() {
                                         Industry Assessment
                                     </h3>
                                     <p className="text-gray-300 leading-relaxed">
-                                        "{result.marketAnalysis || "Your profile shows strong potential in the current market. Focus on bridging the core skill gaps to maximize your competitive edge."}"
+                                        &quot;{result.marketAnalysis || "Your profile shows strong potential in the current market. Focus on bridging the core skill gaps to maximize your competitive edge."}&quot;
                                     </p>
                                     {result.executiveSummary && (
                                         <div className="mt-4 pt-4 border-t border-white/10 not-italic">
@@ -365,52 +284,12 @@ export default function AnalyzePage() {
                                 </div>
                             </div>
 
-                            {/* Resume Boosters / Actionable Feedback */}
-                            <div className="glass-panel p-8 rounded-3xl bg-gradient-to-br from-yellow-500/[0.03] to-transparent">
-                                <h3 className="text-lg font-clash font-semibold text-white mb-6 flex items-center gap-2">
-                                    <Zap className="w-5 h-5 text-yellow-400" />
-                                    Resume Boosters
-                                </h3>
-
-                                <div className="space-y-4 mb-8">
-                                    {(result.boosters || result.tips).map((item: string, i: number) => (
-                                        <div key={i} className="p-4 rounded-xl bg-white/5 border border-white/5 flex gap-4 hover:bg-white/[0.07] transition-all">
-                                            <div className="mt-1"><CheckCircle2 className="w-5 h-5 text-primary" /></div>
-                                            <p className="text-gray-200 text-sm leading-relaxed">{item}</p>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                {result.tips && result.boosters && (
-                                    <>
-                                        <h4 className="text-sm font-semibold text-gray-400 mb-4 uppercase tracking-wider">Career Advice</h4>
-                                        <div className="space-y-3">
-                                            {result.tips.map((tip: string, i: number) => (
-                                                <div key={i} className="flex gap-3 text-sm text-gray-400">
-                                                    <ChevronRight className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                                                    <p>{tip}</p>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </>
-                                )}
-
-                                {result.gaps && result.gaps.length > 0 && (
-                                    <div className="mt-8 pt-8 border-t border-white/10">
-                                        <p className="text-red-400 text-sm font-bold mb-4 uppercase tracking-wide text-xs flex items-center gap-2">
-                                            <AlertTriangle className="w-4 h-4" />
-                                            Missing Keywords
-                                        </p>
-                                        <div className="flex flex-wrap gap-2">
-                                            {result.gaps.map((gap: string) => (
-                                                <span key={gap} className="px-3 py-1.5 rounded-lg bg-red-500/10 text-red-300 text-xs font-medium border border-red-500/10">
-                                                    {gap}
-                                                </span>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
+                            {/* Resume Boosters — Extracted Component */}
+                            <ResumeBoosterList
+                                boosters={result.boosters}
+                                tips={result.tips}
+                                gaps={result.gaps}
+                            />
                         </motion.div>
                     )}
                 </div>
@@ -418,7 +297,13 @@ export default function AnalyzePage() {
 
             {/* ── Auth Prompt Overlay ─────────────────────────────── */}
             {authPrompt && (
-                <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+                <div
+                    className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="Sign up required"
+                    onKeyDown={(e) => e.key === "Escape" && setAuthPrompt(false)}
+                >
                     <motion.div
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
@@ -429,7 +314,7 @@ export default function AnalyzePage() {
                         </div>
                         <h2 className="text-2xl font-clash font-bold text-white">Sign Up to Unlock</h2>
                         <p className="text-gray-400">
-                            Create a free account to access our AI-powered resume analyzer and get personalized career insights.
+                            Create a free account to access our resume analyzer and get personalized career insights.
                         </p>
                         <div className="flex gap-3">
                             <button

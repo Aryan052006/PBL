@@ -108,7 +108,7 @@ export default function ProfilePage() {
         setSaving(true);
         setEditError("");
         try {
-            const res = await fetch("http://127.0.0.1:5000/api/auth/profile/update", {
+            const res = await fetch("http://localhost:5000/api/auth/profile/update", {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ userId: user?.id, ...editData }),
@@ -257,16 +257,18 @@ export default function ProfilePage() {
                                         <label className="text-sm text-gray-400 mb-2 block">Branch</label>
                                         <select value={editData.branch}
                                             onChange={e => setEditData((p: any) => ({ ...p, branch: e.target.value }))}
-                                            className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 px-4 text-white focus:outline-none focus:border-primary/50">
-                                            {BRANCHES.map(b => <option key={b} value={b.toLowerCase().replace(" & ","").replace(" ","")} className="bg-[#0d0d1a]">{b}</option>)}
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 px-4 text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent transition-all cursor-pointer appearance-none"
+                                            style={{ colorScheme: "dark" }}>
+                                            {BRANCHES.map(b => <option key={b} value={b.toLowerCase().replace(" & ","").replace(" ","")} className="bg-[#13141f]">{b}</option>)}
                                         </select>
                                     </div>
                                     <div>
                                         <label className="text-sm text-gray-400 mb-2 block">Year</label>
                                         <select value={editData.year}
                                             onChange={e => setEditData((p: any) => ({ ...p, year: e.target.value }))}
-                                            className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 px-4 text-white focus:outline-none focus:border-primary/50">
-                                            {YEARS.map(y => <option key={y} value={y} className="bg-[#0d0d1a]">{y}</option>)}
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 px-4 text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent transition-all cursor-pointer appearance-none"
+                                            style={{ colorScheme: "dark" }}>
+                                            {YEARS.map(y => <option key={y} value={y} className="bg-[#13141f]">{y}</option>)}
                                         </select>
                                     </div>
                                 </div>
@@ -320,7 +322,7 @@ export default function ProfilePage() {
                                             <label className="text-sm text-gray-400 mb-1 block">{label}</label>
                                             <input type="number" value={editData[key] ?? ""} placeholder={placeholder}
                                                 onChange={e => setEditData((p: any) => ({ ...p, [key]: e.target.value }))}
-                                                className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 px-3 text-white text-sm focus:outline-none focus:border-primary/50 placeholder-gray-600" />
+                                                className="w-full bg-white/5 border border-white/10 rounded-xl py-2.5 px-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent transition-all placeholder-gray-600" />
                                         </div>
                                     ))}
                                 </div>

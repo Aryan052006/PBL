@@ -80,7 +80,7 @@ export default function SignUpPage() {
         setIsLoading(true);
         setError("");
         try {
-            const res = await fetch("http://127.0.0.1:5000/api/auth/signup-init", {
+            const res = await fetch("http://localhost:5000/api/auth/signup-init", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ name: formData.name, email: formData.email, password: formData.password }),
@@ -100,7 +100,7 @@ export default function SignUpPage() {
         setIsLoading(true);
         setError("");
         try {
-            const res = await fetch("http://127.0.0.1:5000/api/auth/verify-otp", {
+            const res = await fetch("http://localhost:5000/api/auth/verify-otp", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email: formData.email, otp: formData.otp }),
@@ -119,7 +119,7 @@ export default function SignUpPage() {
         setIsLoading(true);
         setError("");
         try {
-            const res = await fetch("http://127.0.0.1:5000/api/auth/complete-signup", {
+            const res = await fetch("http://localhost:5000/api/auth/complete-signup", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -195,7 +195,7 @@ export default function SignUpPage() {
                                     <div className="relative">
                                         <User className="absolute left-3 top-3.5 w-5 h-5 text-gray-500" />
                                         <input type="text" name="name" value={formData.name} onChange={handleChange} required
-                                            className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white focus:outline-none focus:border-primary/50 transition-colors"
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent transition-all"
                                             placeholder="John Doe" />
                                     </div>
                                 </div>
@@ -204,7 +204,7 @@ export default function SignUpPage() {
                                     <div className="relative">
                                         <Mail className="absolute left-3 top-3.5 w-5 h-5 text-gray-500" />
                                         <input type="email" name="email" value={formData.email} onChange={handleChange} required
-                                            className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white focus:outline-none focus:border-primary/50 transition-colors"
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent transition-all"
                                             placeholder="you@university.edu" />
                                     </div>
                                 </div>
@@ -213,7 +213,7 @@ export default function SignUpPage() {
                                     <div className="relative">
                                         <Lock className="absolute left-3 top-3.5 w-5 h-5 text-gray-500" />
                                         <input type="password" name="password" value={formData.password} onChange={handleChange} required
-                                            className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white focus:outline-none focus:border-primary/50 transition-colors"
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent transition-all"
                                             placeholder="••••••••" />
                                     </div>
                                 </div>
@@ -232,7 +232,7 @@ export default function SignUpPage() {
                                 <div className="space-y-1">
                                     <label className="text-sm text-gray-400 text-center block">Verification Code</label>
                                     <input type="text" name="otp" value={formData.otp} onChange={handleChange} required maxLength={6}
-                                        className="w-full bg-white/5 border border-white/10 rounded-xl py-4 text-center text-3xl font-bold tracking-[1em] text-primary focus:outline-none focus:border-primary/50 transition-colors"
+                                        className="w-full bg-white/5 border border-white/10 rounded-xl py-4 text-center text-3xl font-bold tracking-[1em] text-primary focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent transition-all"
                                         placeholder="000000" />
                                 </div>
                                 <div className="flex gap-4">
@@ -261,7 +261,7 @@ export default function SignUpPage() {
                                     <div className="relative">
                                         <Calendar className="absolute left-3 top-3.5 w-5 h-5 text-gray-500" />
                                         <input type="date" name="birthdate" value={formData.birthdate} onChange={handleChange} required
-                                            className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white focus:outline-none focus:border-primary/50 transition-colors"
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent transition-all"
                                             style={{ colorScheme: "dark" }} />
                                     </div>
                                 </div>
@@ -376,7 +376,7 @@ export default function SignUpPage() {
                                             value={(formData as any)[key]}
                                             onChange={e => set(key, e.target.value)}
                                             placeholder={placeholder}
-                                            className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-primary/50 transition-colors placeholder-gray-600"
+                                            className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent transition-all placeholder-gray-600"
                                         />
                                         <p className="text-xs text-gray-600">{hint}</p>
                                     </div>
@@ -405,7 +405,7 @@ export default function SignUpPage() {
                                         value={formData.coding_platform_rating}
                                         onChange={e => set("coding_platform_rating", e.target.value)}
                                         placeholder="e.g. 1200 (enter 0 if not on any platform)"
-                                        className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-primary/50 transition-colors placeholder-gray-600" />
+                                        className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent transition-all placeholder-gray-600" />
                                 </div>
 
                                 {/* Communication Score */}
@@ -431,7 +431,7 @@ export default function SignUpPage() {
                                         value={formData.aptitude_score}
                                         onChange={e => set("aptitude_score", e.target.value)}
                                         placeholder="e.g. 75 (leave blank if unknown)"
-                                        className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-primary/50 transition-colors placeholder-gray-600" />
+                                        className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent transition-all placeholder-gray-600" />
                                 </div>
                             </div>
 
