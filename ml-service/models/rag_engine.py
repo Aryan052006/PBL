@@ -159,7 +159,7 @@ Respond ONLY with a valid JSON object. No markdown. Use decisive, expert languag
         import google.generativeai as genai
         import re
         genai.configure(api_key=gemini_api_key)
-        model = genai.GenerativeModel("gemini-2.0-flash")
+        model = genai.GenerativeModel("gemini-1.5-flash")
         result = model.generate_content(prompt)
         text = result.text
 
@@ -241,7 +241,7 @@ Tone: Authoritative, visionary, and decisive. No markdown formatting.
     try:
         import google.generativeai as genai
         genai.configure(api_key=gemini_api_key)
-        model = genai.GenerativeModel("gemini-2.0-flash")
+        model = genai.GenerativeModel("gemini-1.5-flash")
         result = model.generate_content(prompt)
         text = result.text.replace("```json", "").replace("```", "").strip()
         return json.loads(text)

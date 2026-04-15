@@ -72,7 +72,7 @@ const getGeminiRecommendation = async (userProfile) => {
     const ctx = BRANCH_CONTEXT[branchKey] || BRANCH_CONTEXT["ce"];
 
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
         const prompt = `
             Act as an elite career strategist and high-level technical consultant for top-tier Indian engineering talent. Your tone is bold, authoritative, and visionary.
@@ -167,7 +167,7 @@ const getDomainDetails = async (domainTitle, userProfile) => {
     const ctx = BRANCH_CONTEXT[branchKey] || BRANCH_CONTEXT["ce"];
 
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
         const prompt = `
             Construct an authoritative, high-gravity career guide for the domain: "${domainTitle}".

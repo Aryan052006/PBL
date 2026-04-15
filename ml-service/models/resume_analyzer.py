@@ -83,7 +83,7 @@ def _generate_dynamic_insights(raw_text: str, domain: dict, best_score: int, sta
         import json
         import re
         genai.configure(api_key=gemini_key)
-        model = genai.GenerativeModel("gemini-2.0-flash")
+        model = genai.GenerativeModel("gemini-1.5-flash")
         
         prompt = f"""
 Act as an elite technical recruiter and career coach for the Indian tech market in 2024-2026.

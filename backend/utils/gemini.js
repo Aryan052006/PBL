@@ -12,7 +12,7 @@ const analyzeWithGemini = async (input) => {
             return null;
         }
 
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
         const promptText = `
         You are an expert career advisor and technical recruiter. 
