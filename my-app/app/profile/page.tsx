@@ -108,7 +108,7 @@ export default function ProfilePage() {
         setSaving(true);
         setEditError("");
         try {
-            const res = await fetch("http://localhost:5000/api/auth/profile/update", {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/profile/update`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ userId: user?.id, ...editData }),

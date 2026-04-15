@@ -33,7 +33,7 @@ export default function AnalyzePage() {
             const formData = new FormData();
             formData.append("resume", file);
 
-            const res = await fetch("http://localhost:5000/api/analyze/upload", {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/analyze/upload`, {
                 method: "POST",
                 body: formData,
             });

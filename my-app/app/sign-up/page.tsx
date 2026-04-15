@@ -80,7 +80,7 @@ export default function SignUpPage() {
         setIsLoading(true);
         setError("");
         try {
-            const res = await fetch("http://localhost:5000/api/auth/signup-init", {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/signup-init`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ name: formData.name, email: formData.email, password: formData.password }),
@@ -100,7 +100,7 @@ export default function SignUpPage() {
         setIsLoading(true);
         setError("");
         try {
-            const res = await fetch("http://localhost:5000/api/auth/verify-otp", {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/verify-otp`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email: formData.email, otp: formData.otp }),
@@ -119,7 +119,7 @@ export default function SignUpPage() {
         setIsLoading(true);
         setError("");
         try {
-            const res = await fetch("http://localhost:5000/api/auth/complete-signup", {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/complete-signup`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

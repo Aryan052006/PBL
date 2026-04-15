@@ -78,7 +78,7 @@ export default function DomainsPage() {
 
         try {
             // Actual API Call
-            const res = await fetch("http://localhost:5000/api/recommend", {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/recommend`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -123,7 +123,7 @@ export default function DomainsPage() {
         setSelectedDomain({ title: domainTitle }); // Placeholder while loading
 
         try {
-            const res = await fetch("http://localhost:5000/api/explore", {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/explore`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
