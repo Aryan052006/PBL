@@ -6,7 +6,7 @@
 const http = require('http');
 
 const ML_SERVICE_BASE = process.env.ML_SERVICE_URL || 'http://127.0.0.1:8000';
-const TIMEOUT_MS = 60000;
+const TIMEOUT_MS = 90000;
 
 /** Check if the ML service is alive */
 async function checkMLServiceHealth() {
@@ -27,7 +27,7 @@ function postToML(path, body) {
 
         const options = {
             hostname: url.hostname,
-            port: url.port || 8000,
+            port: url.port || (url.protocol === 'https:' ? 443 : 80),
             path,
             method: 'POST',
             headers: {
@@ -74,7 +74,7 @@ function postFileToML(path, fileBuffer, mimetype, filename) {
         const url = new URL(ML_SERVICE_BASE);
         const options = {
             hostname: url.hostname,
-            port: url.port || 8000,
+            port: url.port || (url.protocol === 'https:' ? 443 : 80),
             path,
             method: 'POST',
             headers: {
