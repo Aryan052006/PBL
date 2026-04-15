@@ -36,44 +36,33 @@ pipeline   = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Load / train models on startup."""
+    """Fast startup for Render deployment."""
     global knn_model, pipeline
 
     os.makedirs(SAVED_DIR, exist_ok=True)
 
-    # Try loading persisted models first (faster re-starts)
+    # Load saved models only
     if os.path.exists(KNN_PATH) and os.path.exists(PIPE_PATH):
         print("[App] Loading persisted models...")
         knn_model = joblib.load(KNN_PATH)
-        pipeline  = joblib.load(PIPE_PATH)
+        pipeline = joblib.load(PIPE_PATH)
         print("[App] Models loaded from disk.")
     else:
         print("[App] No persisted models found — running startup training...")
         import startup
         startup.run()
+
         if os.path.exists(KNN_PATH):
             knn_model = joblib.load(KNN_PATH)
-            pipeline  = joblib.load(PIPE_PATH)
+            pipeline = joblib.load(PIPE_PATH)
             print("[App] Models loaded after training.")
 
-    # Pre-warm sentence-transformers
-    try:
-        from models.rag_engine import _get_domain_embeddings
-        _get_domain_embeddings()
-    except Exception as e:
-        print(f"[App] Encoder warmup skipped: {e}")
+    # Skip heavy warmup during Render startup
+    print("[App] Skipping heavy embedding/index warmup for faster deployment.")
 
-    # Pre-warm job prediction index
-    try:
-        from preprocessing.job_data_pipeline import _load_or_build_index
-        _load_or_build_index()
-    except Exception as e:
-        print(f"[App] Job index warmup skipped: {e}")
-
-    yield   # ← app is running
+    yield
 
     print("[App] Shutting down ML service.")
-
 
 app = FastAPI(
     title="Smart Career Domain ML Service",
