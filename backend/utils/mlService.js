@@ -1,6 +1,6 @@
 /**
  * ML Service HTTP client — connects Node.js backend to the Python FastAPI microservice.
- * Priority chain: ML Service → Gemini → Rule-based fallback
+ * Priority chain: ML Service → Rule-based fallback
  */
 
 const http = require('http');

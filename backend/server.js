@@ -34,7 +34,7 @@ app.get('/', (req, res) => {
 });
 
 // ── Domain Recommendation Endpoint ────────────────────────────────────────
-// Priority: ML Service (KNN+RAG) → Gemini → error
+// Priority: ML Service (KNN+RAG) → Rule-based fallback (no Gemini)
 app.post('/api/recommend', async (req, res) => {
   const { branch, skills, interests, year, cgpa, projects_count,
           internship_experience, certifications, coding_platform_rating,
@@ -58,30 +58,27 @@ app.post('/api/recommend', async (req, res) => {
       return res.json({ success: true, data: mlResult });
     }
 
-    // Step 2: Gemini (Fallback)
-    console.log('[Recommend] ML failed — falling back to Gemini...');
-    const { getGeminiRecommendation } = require('./utils/aiRecommendation');
-    const skillsArray = Array.isArray(skills)
-      ? skills
-      : (skills || "").split(",").map(s => s.trim());
-
-    const geminiResult = await getGeminiRecommendation({ branch, year, skills: skillsArray, interests });
-    
-    if (!geminiResult || !geminiResult.recommendations || geminiResult.recommendations.length === 0) {
-      console.error('[Recommend] Gemini fallback also failed to produce recommendations.');
-      return res.status(503).json({ success: false, msg: "Recommendation engines are currently unavailable. Please try again later." });
-    }
-
-    return res.json({ success: true, data: { ...geminiResult, source: 'gemini' } });
+    // Step 2: Rule-based fallback (always succeeds, no API keys needed)
+    console.log('[Recommend] ML failed — using rule-based fallback...');
+    const { getRuleBasedRecommendation } = require('./utils/aiRecommendation');
+    const fallbackResult = getRuleBasedRecommendation(branch, year, skills, interests);
+    return res.json({ success: true, data: fallbackResult });
 
   } catch (error) {
-    console.error('[Recommend] All methods failed:', error.message);
-    res.status(500).json({ success: false, msg: "Recommendation failed" });
+    console.error('[Recommend] Error:', error.message);
+    // Ultimate safety net — still return 200 with rule-based data
+    try {
+      const { getRuleBasedRecommendation } = require('./utils/aiRecommendation');
+      const safeResult = getRuleBasedRecommendation(branch, year, skills, interests);
+      return res.json({ success: true, data: safeResult });
+    } catch (e) {
+      res.status(500).json({ success: false, msg: "Recommendation failed" });
+    }
   }
 });
 
 // ── Domain Exploration Endpoint ───────────────────────────────────────────
-// Priority: ML Service (RAG) → Gemini → error
+// Priority: ML Service (RAG) → Rule-based fallback (no Gemini)
 app.post('/api/explore', async (req, res) => {
   const { domain, branch, year, skills } = req.body;
 
@@ -97,22 +94,28 @@ app.post('/api/explore', async (req, res) => {
       return res.json({ success: true, data: mlResult });
     }
 
-    // Step 2: Gemini (Fallback)
-    console.log('[Explore] ML failed — falling back to Gemini...');
-    const { getDomainDetails } = require('./utils/aiRecommendation');
-    const details = await getDomainDetails(domain, { branch, year, skills });
-    return res.json({ success: true, data: { ...details, source: 'gemini' } });
+    // Step 2: Rule-based fallback (always succeeds)
+    console.log('[Explore] ML failed — using rule-based fallback...');
+    const { getRuleBasedDomainDetails } = require('./utils/aiRecommendation');
+    const fallbackResult = getRuleBasedDomainDetails(domain, branch, year, skills);
+    return res.json({ success: true, data: fallbackResult });
 
   } catch (error) {
-    console.error('[Explore] All methods failed:', error.message);
-    res.status(500).json({ success: false, msg: "Exploration failed" });
+    console.error('[Explore] Error:', error.message);
+    try {
+      const { getRuleBasedDomainDetails } = require('./utils/aiRecommendation');
+      const safeResult = getRuleBasedDomainDetails(domain, branch, year, skills);
+      return res.json({ success: true, data: safeResult });
+    } catch (e) {
+      res.status(500).json({ success: false, msg: "Exploration failed" });
+    }
   }
 });
 
 // Start server immediately
 app.listen(PORT, () => {
   console.log(`\n🚀 Server running on port ${PORT}`);
-  console.log('   ML Service → Gemini → Rule-based fallback chain active');
+  console.log('   ML Service → Rule-based fallback chain active (no Gemini)');
 });
 
 // Database Connection
