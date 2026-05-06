@@ -59,13 +59,22 @@ const calculateDomainScore = (text, domainKey) => {
 
 const estimateSalary = (score, salaryRange) => {
     const { min, max, currency } = salaryRange;
-    const factor = Math.max(0, (score - 40) / 60);
-    const estimated = Math.round(min + (max - min) * factor);
+    
+    // Factor is between 0 and 1 based on resume score
+    const factor = Math.max(0, (score - 20) / 80);
+    
+    // Dynamically calculate the floor based on their score
+    const estimatedMin = Math.round(min + (max - min) * factor * 0.7);
+    
+    // Dynamically calculate the ceiling (typically 30-50% higher than the floor depending on score)
+    const estimatedMax = Math.round(estimatedMin * (1.3 + (factor * 0.2)));
+    
     const formatted = currency === 'INR' 
-        ? `₹${Math.floor(estimated/100000)}L - ₹${Math.floor(max/100000)}L`
-        : `${currency === 'USD' ? '$' : '₹'}${estimated.toLocaleString()}`;
+        ? `₹${(estimatedMin/100000).toFixed(1)}L - ₹${(estimatedMax/100000).toFixed(1)}L`
+        : `$${estimatedMin.toLocaleString()}`;
+        
     return {
-        value: estimated, currency, min, max,
+        value: estimatedMin, currency, min: estimatedMin, max: estimatedMax,
         formatted
     };
 };

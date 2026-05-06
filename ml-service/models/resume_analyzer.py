@@ -56,18 +56,35 @@ def _extract_skills_from_text(text: str, knowledge: list) -> list:
 
 
 def _estimate_salary(domain: dict, score: int) -> dict:
-    """Static fallback: Interpolate salary estimate within domain's entry-level range."""
+    """Static fallback: Dynamically interpolate salary estimate within domain's entry-level range based on score."""
     try:
         entry = domain["salaryRange"]["entry"]  # e.g. "4-8 LPA"
         parts = re.findall(r"\d+", entry)
         if len(parts) >= 2:
             lo, hi = int(parts[0]) * 100000, int(parts[1]) * 100000
-            factor = max(0, (score - 30) / 70)
-            est = int(lo + (hi - lo) * factor)
-            return {"min": lo, "max": hi, "currency": "INR", "formatted": f"₹{lo//100000}L - ₹{hi//100000}L"}
+            
+            # Factor based on score (0 to 1)
+            factor = max(0, (score - 20) / 80)
+            
+            # Dynamically calculate the floor based on their score
+            estimated_min = int(lo + (hi - lo) * factor * 0.7)
+            
+            # Dynamically calculate the ceiling (30-50% higher than the floor depending on score)
+            estimated_max = int(estimated_min * (1.3 + (factor * 0.2)))
+            
+            return {
+                "min": estimated_min, 
+                "max": estimated_max, 
+                "currency": "INR", 
+                "formatted": f"₹{estimated_min/100000:.1f}L - ₹{estimated_max/100000:.1f}L"
+            }
     except Exception:
         pass
-    return {"min": 500000, "max": 1200000, "currency": "INR", "formatted": "₹5L - ₹12L"}
+    
+    # Absolute default fallback
+    base_min = 400000 + int((score / 100) * 300000)
+    base_max = int(base_min * 1.4)
+    return {"min": base_min, "max": base_max, "currency": "INR", "formatted": f"₹{base_min/100000:.1f}L - ₹{base_max/100000:.1f}L"}
 
 
 def _generate_dynamic_insights(raw_text: str, domain: dict, best_score: int, static_fallbacks: dict) -> dict:
