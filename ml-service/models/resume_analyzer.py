@@ -85,9 +85,14 @@ def _generate_dynamic_insights(raw_text: str, domain: dict, best_score: int, sta
         genai.configure(api_key=gemini_key)
         model = genai.GenerativeModel("gemini-1.5-flash")
         
+        baseline_salary = static_fallbacks['salary']['formatted']
+        
         prompt = f"""
 Act as an elite technical recruiter and career coach for the Indian tech market in 2024-2026.
 Analyze this resume text and the predicted domain to generate personalized, dynamic career insights.
+CRITICAL: You MUST predict a realistic ANNUAL salary (CTC) in Indian Rupees (INR) for the INDIAN market based on their skills.
+Do NOT provide US salaries (e.g., $100,000). Typical Indian tech salaries range from 3,00,000 INR (3 LPA) to 25,00,000 INR (25 LPA) based on experience.
+Baseline expected salary for this profile: {baseline_salary}. Adjust slightly based on resume strength.
 
 Domain: {domain['domain']}
 Base Competency Score: {best_score}/100
@@ -98,8 +103,8 @@ Resume Text Snippet (first 1500 chars):
 Provide the output strictly as a JSON object containing the exact following keys:
 {{
     "salary": {{
-        "min": (integer, e.g. 500000),
-        "max": (integer, e.g. 800000),
+        "min": (integer, Annual CTC in INR, e.g. 500000),
+        "max": (integer, Annual CTC in INR, e.g. 800000),
         "currency": "INR",
         "formatted": "₹5L - ₹8L"
     }},
@@ -122,12 +127,24 @@ No markdown formatting. Do not include any other text.
             text = text.replace("```json", "").replace("```", "").strip()
             
         data = json.loads(text)
+        
+        # Salary Normalization and Sanity Check
+        min_sal = int(data.get("salary", {}).get("min", static_fallbacks["salary"]["min"]))
+        max_sal = int(data.get("salary", {}).get("max", static_fallbacks["salary"]["max"]))
+        
+        # Check if AI hallucinated USD numbers (e.g., 100000) or unrealistically high numbers (e.g., > 60 Lakhs)
+        if min_sal < 200000 or min_sal > 6000000:
+            min_sal = static_fallbacks["salary"]["min"]
+            max_sal = static_fallbacks["salary"]["max"]
+            
+        formatted_sal = f"₹{min_sal//100000}L - ₹{max_sal//100000}L"
+        
         return {
             "salary": {
-                "min": int(data.get("salary", {}).get("min", static_fallbacks["salary"]["min"])),
-                "max": int(data.get("salary", {}).get("max", static_fallbacks["salary"]["max"])),
+                "min": min_sal,
+                "max": max_sal,
                 "currency": "INR",
-                "formatted": data.get("salary", {}).get("formatted", static_fallbacks["salary"]["formatted"])
+                "formatted": formatted_sal
             },
             "executiveSummary": data.get("executiveSummary", ""),
             "jobTitles": data.get("jobTitles", static_fallbacks["jobTitles"]),
