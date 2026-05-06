@@ -61,9 +61,12 @@ const estimateSalary = (score, salaryRange) => {
     const { min, max, currency } = salaryRange;
     const factor = Math.max(0, (score - 40) / 60);
     const estimated = Math.round(min + (max - min) * factor);
+    const formatted = currency === 'INR' 
+        ? `₹${Math.floor(estimated/100000)}L - ₹${Math.floor(max/100000)}L`
+        : `${currency === 'USD' ? '$' : '₹'}${estimated.toLocaleString()}`;
     return {
         value: estimated, currency, min, max,
-        formatted: `${currency === 'USD' ? '$' : '₹'}${estimated.toLocaleString()}`
+        formatted
     };
 };
 

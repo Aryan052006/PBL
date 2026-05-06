@@ -31,9 +31,9 @@
             "skills"
         ],
         "salary": {
-            "min": 60000,
-            "max": 140000,
-            "currency": "USD"
+            "min": 400000,
+            "max": 1200000,
+            "currency": "INR"
         },
         "roles": [
             "Frontend Developer",
@@ -75,9 +75,9 @@
             "publications"
         ],
         "salary": {
-            "min": 80000,
-            "max": 160000,
-            "currency": "USD"
+            "min": 600000,
+            "max": 1500000,
+            "currency": "INR"
         },
         "roles": [
             "Data Scientist",
@@ -120,9 +120,9 @@
             "skills"
         ],
         "salary": {
-            "min": 90000,
-            "max": 170000,
-            "currency": "USD"
+            "min": 700000,
+            "max": 1600000,
+            "currency": "INR"
         },
         "roles": [
             "DevOps Engineer",
@@ -160,9 +160,9 @@
             "achievements"
         ],
         "salary": {
-            "min": 70000,
-            "max": 130000,
-            "currency": "USD"
+            "min": 350000,
+            "max": 1000000,
+            "currency": "INR"
         },
         "roles": [
             "Software Developer",
