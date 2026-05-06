@@ -164,3 +164,4 @@ def predict(knn, pipeline, feature_vector: list, branch: str = "ce") -> list:
         results[0]["match_score"] = max(results[0]["match_score"], 72)
 
     return results
+    

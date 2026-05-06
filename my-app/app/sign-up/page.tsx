@@ -79,6 +79,27 @@ export default function SignUpPage() {
         e.preventDefault();
         setIsLoading(true);
         setError("");
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(formData.email)) {
+            setError("Please enter a correct email address.");
+            setIsLoading(false);
+            return;
+        }
+
+        if (formData.password.length < 6) {
+            setError("Password must be at least 6 characters long.");
+            setIsLoading(false);
+            return;
+        }
+
+        const specialCharRegex = /[!@#$%^&*(),.?":{}|<>]/;
+        if (!specialCharRegex.test(formData.password)) {
+            setError("Password must contain at least one special character.");
+            setIsLoading(false);
+            return;
+        }
+
         try {
             const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/signup-init`, {
                 method: "POST",
@@ -261,6 +282,7 @@ export default function SignUpPage() {
                                     <div className="relative">
                                         <Calendar className="absolute left-3 top-3.5 w-5 h-5 text-gray-500" />
                                         <input type="date" name="birthdate" value={formData.birthdate} onChange={handleChange} required
+                                            max={new Date().toISOString().split("T")[0]}
                                             className="w-full bg-white/5 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent transition-all"
                                             style={{ colorScheme: "dark" }} />
                                     </div>
@@ -302,7 +324,15 @@ export default function SignUpPage() {
                                 <button onClick={() => setStep(2)} className="px-5 py-4 rounded-xl text-gray-400 hover:text-white transition-colors flex items-center gap-2">
                                     <ArrowLeft className="w-4 h-4" /> Back
                                 </button>
-                                <button onClick={() => setStep(4)} disabled={!formData.birthdate || !formData.branch || !formData.year}
+                                <button onClick={() => {
+                                    const today = new Date().toISOString().split("T")[0];
+                                    if (formData.birthdate > today) {
+                                        setError("Birth date cannot be in the future.");
+                                        return;
+                                    }
+                                    setError("");
+                                    setStep(4);
+                                }} disabled={!formData.birthdate || !formData.branch || !formData.year}
                                     className="flex-1 py-4 bg-primary rounded-xl font-bold text-white transition-all flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed">
                                     Next Step <ArrowRight className="w-5 h-5" />
                                 </button>
