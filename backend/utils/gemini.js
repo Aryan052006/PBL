@@ -15,9 +15,12 @@ const analyzeWithGemini = async (input) => {
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
         const promptText = `
-        You are an expert career advisor and technical recruiter. 
+        You are an expert career advisor and technical recruiter for the Indian tech market. 
         Analyze the provided resume content (which may be text, an image, or a PDF) and provide a structured career breakdown in JSON format.
         
+        CRITICAL: You MUST predict a realistic ANNUAL salary (CTC) in Indian Rupees (INR) for the INDIAN market based on their skills.
+        Do NOT provide US salaries (e.g., $100,000). Typical Indian tech salaries range from 3,00,000 INR (3 LPA) to 25,00,000 INR (25 LPA) based on experience.
+
         The output must be a valid JSON object with the following fields:
         {
             "bestFitDomain": "The most suitable domain",
@@ -27,7 +30,7 @@ const analyzeWithGemini = async (input) => {
                 "min": 800000,
                 "max": 1200000,
                 "currency": "INR",
-                "formatted": "₹8 LPA - ₹12 LPA"
+                "formatted": "₹8L - ₹12L"
             },
             "jobTitles": ["3-4 specific job titles"],
             "gaps": ["5-8 missing technical skills"],
@@ -86,7 +89,27 @@ const analyzeWithGemini = async (input) => {
             textResult = textResult.split("```")[1].split("```")[0];
         }
 
-        return JSON.parse(textResult.trim());
+        const data = JSON.parse(textResult.trim());
+        
+        // Salary Normalization and Sanity Check
+        if (data.salary) {
+            let minSal = data.salary.min;
+            let maxSal = data.salary.max;
+            
+            // Check if AI hallucinated USD numbers (e.g., 100000) or unrealistically high numbers
+            if (minSal < 200000 || minSal > 6000000) {
+                // Default fallback to 4 LPA - 8 LPA
+                minSal = 400000;
+                maxSal = 800000;
+            }
+            
+            data.salary.min = minSal;
+            data.salary.max = maxSal;
+            data.salary.currency = "INR";
+            data.salary.formatted = `₹${Math.floor(minSal/100000)}L - ₹${Math.floor(maxSal/100000)}L`;
+        }
+        
+        return data;
     } catch (error) {
         console.error("Gemini Analysis Error:", error);
         return null;
